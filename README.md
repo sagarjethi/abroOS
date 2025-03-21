@@ -1,8 +1,24 @@
-# AbroOS - Web-Based Operating System Interface
+# AbroOS - AI-Powered Web-Based Operating System Interface
 
-A modern, web-based operating system interface built with Next.js, TypeScript, and Tailwind CSS. AbroOS provides a familiar desktop environment with windows, apps, and a taskbar, all running in the browser.
+A modern, web-based operating system interface with built-in AI capabilities and Trusted Execution Environment (TEE) technology. Built with Next.js, TypeScript, and Tailwind CSS, AbroOS provides a secure, intelligent desktop environment with windows, apps, and a taskbar, all running in the browser.
 
 ## 🚀 Features
+
+- 🤖 AI Agent Integration
+  - Natural language command processing
+  - Context-aware task automation
+  - Intelligent window management
+  - Smart app recommendations
+  - Voice command support
+  - Personalized user experience
+
+- 🔒 Trusted Execution Environment (TEE)
+  - Secure app execution
+  - Protected memory spaces
+  - Encrypted data storage
+  - Secure communication channels
+  - Hardware-backed security
+  - Privacy-preserving computations
 
 - 🖥️ Desktop-like interface with windows and icons
 - 🎨 Modern UI with Shadcn UI components
@@ -21,6 +37,9 @@ A modern, web-based operating system interface built with Next.js, TypeScript, a
 - **State Management:** Zustand
 - **Icons:** Lucide Icons
 - **Window Management:** Custom implementation
+- **AI Integration:** OpenAI API, LangChain
+- **Security:** WebAssembly, TEE implementation
+- **Authentication:** NextAuth.js
 
 ## 🚀 Getting Started
 
@@ -39,7 +58,13 @@ A modern, web-based operating system interface built with Next.js, TypeScript, a
    pnpm install
    ```
 
-3. Run the development server:
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your API keys and configuration
+   ```
+
+4. Run the development server:
    ```bash
    npm run dev
    # or
@@ -48,9 +73,42 @@ A modern, web-based operating system interface built with Next.js, TypeScript, a
    pnpm dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📋 Project Checklist
+
+### AI Features
+- [ ] AI Agent Core
+  - [ ] Natural language processing engine
+  - [ ] Command interpretation system
+  - [ ] Context management
+  - [ ] Task automation framework
+  - [ ] Voice command processing
+  - [ ] Personalization engine
+
+- [ ] AI-Powered Apps
+  - [ ] Smart browser with AI assistance
+  - [ ] AI-enhanced file management
+  - [ ] Intelligent terminal
+  - [ ] AI-powered search
+  - [ ] Smart notifications
+  - [ ] Predictive task management
+
+### Security Features
+- [ ] TEE Implementation
+  - [ ] Secure memory management
+  - [ ] Encrypted storage system
+  - [ ] Secure communication channels
+  - [ ] Hardware security integration
+  - [ ] Privacy controls
+  - [ ] Security monitoring
+
+- [ ] Authentication & Authorization
+  - [ ] Multi-factor authentication
+  - [ ] Role-based access control
+  - [ ] Session management
+  - [ ] Security logging
+  - [ ] Audit trails
 
 ### Core Features
 - [x] Basic window management
@@ -109,6 +167,8 @@ A modern, web-based operating system interface built with Next.js, TypeScript, a
 - [ ] E2E tests
 - [ ] Performance tests
 - [ ] Accessibility tests
+- [ ] Security tests
+- [ ] AI model tests
 
 ### Documentation
 - [x] Basic README
@@ -117,6 +177,8 @@ A modern, web-based operating system interface built with Next.js, TypeScript, a
 - [ ] State management documentation
 - [ ] Contributing guidelines
 - [ ] Code style guide
+- [ ] Security documentation
+- [ ] AI integration guide
 
 ### Deployment
 - [ ] Production build optimization
@@ -124,10 +186,12 @@ A modern, web-based operating system interface built with Next.js, TypeScript, a
 - [ ] Deployment documentation
 - [ ] Environment configuration
 - [ ] Monitoring setup
+- [ ] Security scanning
+- [ ] Performance monitoring
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## 📝 License
 
@@ -140,6 +204,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Shadcn UI](https://ui.shadcn.com/)
 - [Zustand](https://github.com/pmndrs/zustand)
 - [Lucide Icons](https://lucide.dev/)
+- [OpenAI](https://openai.com/)
+- [LangChain](https://www.langchain.com/)
+- [WebAssembly](https://webassembly.org/)
 
 ## 👥 Authors
 
