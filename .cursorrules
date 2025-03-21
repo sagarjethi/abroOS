@@ -1,0 +1,262 @@
+# Cursor AI Agent Rules for  Abros
+You are an expert in TypeScript, Node.js, Next.js App Router, React, Shadcn UI, Radix UI and Tailwind.
+
+Code Style and Structure
+- Write concise, technical TypeScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+- Structure files: exported component, subcomponents, helpers, static content, types.
+
+## Code Style and Structure
+
+### TypeScript and React Patterns
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Structure files: exported component, subcomponents, helpers, static content, types
+
+### Component Structure Example
+```typescript
+// components/file-explorer/file-list.tsx
+import { type FC } from 'react'
+import { Suspense } from 'react'
+
+interface FileListProps {
+  isLoading?: boolean
+  hasError?: boolean
+  files: FileItem[]
+}
+
+export function FileList({ files, isLoading, hasError }: FileListProps) {
+  if (hasError) return <FileListError />
+  
+  return (
+    <Suspense fallback={<FileListSkeleton />}>
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {files.map(file => (
+          <FileItem key={file.id} {...file} />
+        ))}
+      </ul>
+    </Suspense>
+  )
+}
+```
+
+### Naming Conventions
+- Use lowercase with dashes for directories (e.g., components/auth-wizard)
+- Favor named exports for components
+- Follow consistent naming patterns:
+  ```
+  components/
+    file-explorer/
+      file-list.tsx
+      file-item.tsx
+      use-file-operations.ts
+      types.ts
+  ```
+
+### TypeScript Usage
+- Use TypeScript for all code; prefer interfaces over types
+- Avoid enums; use maps instead:
+  ```typescript
+  // Instead of enum
+  const FileTypes = {
+    DOCUMENT: 'document',
+    IMAGE: 'image',
+    VIDEO: 'video'
+  } as const
+
+  type FileType = typeof FileTypes[keyof typeof FileTypes]
+  ```
+- Use functional components with TypeScript interfaces
+
+## UI and Styling
+
+### Component Libraries
+- Use Shadcn UI for base components
+- Use Radix UI for complex interactive components
+- Implement Tailwind CSS for styling
+- Follow mobile-first responsive design
+
+### Example Component
+```typescript
+// components/window/window-header.tsx
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+
+interface WindowHeaderProps {
+  title: string
+  onClose: () => void
+  onMinimize: () => void
+}
+
+export function WindowHeader({ title, onClose, onMinimize }: WindowHeaderProps) {
+  return (
+    <div className="flex items-center justify-between p-2 bg-background border-b">
+      <h2 className="text-sm font-medium">{title}</h2>
+      <div className="flex gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onMinimize}
+          className="h-6 w-6 p-0"
+        >
+          <MinimizeIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="h-6 w-6 p-0 hover:bg-destructive"
+        >
+          <CloseIcon className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+```
+
+## Performance Optimization
+
+### Server Components
+- Use React Server Components (RSC) by default
+- Add 'use client' only when necessary:
+  ```typescript
+  // components/window/window-drag.tsx
+  'use client'
+  
+  import { useDraggable } from '@/hooks/use-draggable'
+  ```
+
+### Loading States
+- Implement Suspense boundaries:
+  ```typescript
+  <Suspense fallback={<AppSkeleton />}>
+    <AppContent />
+  </Suspense>
+  ```
+
+### Dynamic Imports
+- Use dynamic loading for non-critical components:
+  ```typescript
+  const MonacoEditor = dynamic(() => import('./monaco-editor'), {
+    loading: () => <EditorSkeleton />,
+    ssr: false
+  })
+  ```
+
+### Image Optimization
+```typescript
+import Image from 'next/image'
+
+export function AppIcon({ icon }: { icon: string }) {
+  return (
+    <Image
+      src={icon}
+      alt="App icon"
+      width={32}
+      height={32}
+      className="rounded-md"
+      loading="lazy"
+    />
+  )
+}
+```
+
+## Data Fetching and State Management
+
+### Server Actions
+```typescript
+// app/actions/files.ts
+'use server'
+
+export async function createFile(data: FormData) {
+  const file = await saveFile(data)
+  revalidatePath('/files')
+  return file
+}
+```
+
+### URL State Management
+```typescript
+// hooks/use-file-filter.ts
+import { useQueryState } from 'nuqs'
+
+export function useFileFilter() {
+  const [filter, setFilter] = useQueryState('filter')
+  return { filter, setFilter }
+}
+```
+
+## Error Handling
+
+### Error Boundaries
+```typescript
+// components/error-boundary.tsx
+import { useEffect } from 'react'
+
+export function ErrorBoundary({
+  error,
+  reset
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  useEffect(() => {
+    console.error(error)
+  }, [error])
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <h2>Something went wrong!</h2>
+      <Button onClick={reset}>Try again</Button>
+    </div>
+  )
+}
+```
+
+## Testing
+
+### Component Testing
+```typescript
+// __tests__/components/file-list.test.tsx
+import { render, screen } from '@testing-library/react'
+import { FileList } from '@/components/file-explorer/file-list'
+
+describe('FileList', () => {
+  it('renders files correctly', () => {
+    render(<FileList files={mockFiles} />)
+    expect(screen.getAllByRole('listitem')).toHaveLength(mockFiles.length)
+  })
+})
+```
+
+## Documentation
+
+### Component Documentation
+```typescript
+/**
+ * FileList component displays a grid of files with support for
+ * loading states and error handling
+ *
+ * @example
+ * <FileList
+ *   files={files}
+ *   isLoading={false}
+ *   hasError={false}
+ * />
+ */
+```
+
+## Key Conventions
+- Use 'nuqs' for URL search parameter state management
+- Optimize Web Vitals (LCP, CLS, FID)
+- Follow Next.js best practices for:
+  - Data Fetching
+  - Rendering
+  - Routing
+  - Caching
+  - Error Handling
