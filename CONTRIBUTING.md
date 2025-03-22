@@ -1,56 +1,81 @@
-# Contributing to AbroOS
+# Contributing to abroOs
 
-We love your input! We want to make contributing to AbroOS as easy and transparent as possible, whether it's:
+Thank you for your interest in contributing to abroOs! This document provides guidelines and instructions for contributing to this project.
 
-- Reporting a bug
-- Discussing the current state of the code
-- Submitting a fix
-- Proposing new features
-- Becoming a maintainer
+## Code of Conduct
 
-## Development Process
+By participating in this project, you agree to maintain a respectful and inclusive environment for everyone.
 
-We use GitHub to host code, to track issues and feature requests, as well as accept pull requests.
+## How to Contribute
 
-1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
-5. Make sure your code lints.
-6. Issue that pull request!
+### Reporting Bugs
 
-## Pull Request Process
+If you find a bug, please create an issue with the following information:
+- A clear, descriptive title
+- Steps to reproduce the issue
+- Expected behavior and what actually happened
+- Screenshots if applicable
+- Any additional context that might be helpful
 
-1. Update the README.md with details of changes to the interface, if applicable.
-2. Update the docs/ folder with any new documentation.
-3. The PR will be merged once you have the sign-off of at least one other developer.
+### Suggesting Features
 
-## Any contributions you make will be under the MIT Software License
+Feature suggestions are welcome! Please provide:
+- A clear description of the feature
+- Why this feature would be beneficial
+- Any implementation ideas you have
 
-In short, when you submit code changes, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
+### Pull Requests
 
-## Report bugs using GitHub's [issue tracker]
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Make your changes
+4. Run the tests (if available)
+5. Commit your changes (`git commit -m 'Add some feature'`)
+6. Push to your branch (`git push origin feature/your-feature`)
+7. Open a Pull Request
 
-We use GitHub issues to track public bugs. Report a bug by [opening a new issue](); it's that easy!
+## Development Setup
 
-## Write bug reports with detail, background, and sample code
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/abroos.git
+   cd abroos
+   ```
 
-**Great Bug Reports** tend to have:
+2. Install dependencies
+   ```bash
+   yarn install
+   ```
 
-- A quick summary and/or background
-- Steps to reproduce
-  - Be specific!
-  - Give sample code if you can.
-- What you expected would happen
-- What actually happens
-- Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
+3. Start the development server
+   ```bash
+   yarn dev
+   ```
 
-## Use a Consistent Coding Style
+## Coding Standards
 
-* Use TypeScript for all new code
-* 2 spaces for indentation rather than tabs
-* You can try running `npm run lint` for style unification
+- Use TypeScript for all new code
+- Follow the existing code style
+- Use functional components with hooks
+- Write descriptive commit messages
+- Document your code with comments where necessary
 
-## License
+## Project Structure
 
-By contributing, you agree that your contributions will be licensed under its MIT License. 
+- `app/` - Next.js app directory
+- `components/` - React components
+- `contexts/` - React contexts for state management
+- `hooks/` - Custom React hooks
+- `lib/` - Utility functions and services
+- `public/` - Static assets
+- `styles/` - CSS and Tailwind configuration
+- `types/` - TypeScript type definitions
+
+## Testing
+
+- Test your changes thoroughly before submitting a pull request
+- Write tests for new features if applicable
+
+## Thank You
+
+Your contributions help make this project better for everyone. We appreciate your time and effort! 

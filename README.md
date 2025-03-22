@@ -1,217 +1,76 @@
-# AbroOS - AI-Powered Web-Based Operating System Interface
+# abroOs - Desktop Environment Portfolio Project 🎨
 
-A modern, web-based operating system interface with built-in AI capabilities and Trusted Execution Environment (TEE) technology. Built with Next.js, TypeScript, and Tailwind CSS, AbroOS provides a secure, intelligent desktop environment with windows, apps, and a taskbar, all running in the browser.
+![abroOs Desktop](https://example.com/abroos-preview.png)
 
-## 🚀 Features
+## Overview
 
-- 🤖 AI Agent Integration
-  - Natural language command processing
-  - Context-aware task automation
-  - Intelligent window management
-  - Smart app recommendations
-  - Voice command support
-  - Personalized user experience
+abroOs is an interactive, web-based desktop operating system environment built as a portfolio project, drawing inspiration from Dustin Brett's daedalOS as well as LinuxOnTheWeb. It demonstrates a wide range of frontend and systems programming skills, focusing on a blend of user experience, scalability, and optimization. The goal is to emulate desktop-like functionality, providing a platform where users can interact with applications, files, and features within a web browser.
 
-- 🔒 Trusted Execution Environment (TEE)
-  - Secure app execution
-  - Protected memory spaces
-  - Encrypted data storage
-  - Secure communication channels
-  - Hardware-backed security
-  - Privacy-preserving computations
+## Features
 
-- 🖥️ Desktop-like interface with windows and icons
-- 🎨 Modern UI with Shadcn UI components
-- 🎯 Window management (minimize, maximize, close)
-- 📱 Responsive design
-- 🌙 Dark mode support
-- 🎮 App launcher and taskbar
-- ⚡ Fast and performant
+- 💻 Full desktop environment with window management
+- 🪟 Draggable, resizable, and focusable windows
+- 📁 File system with create, rename, delete operations
+- 🖱️ Context menus for desktop and files
+- 📱 Responsive design that works across devices
+- 🔄 Persistent state with localStorage and Origin Private File System
+- ⚙️ System applications including:
+  - File Explorer
+  - Text Editor
+  - Weather App
+  - Calculator
+  - Calendar
+  - Memory Game
+  - Browser
+  - Code Indexer
 
-## 🛠️ Tech Stack
+## Technologies Used
 
-- **Framework:** Next.js 14 with App Router
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **UI Components:** Shadcn UI
-- **State Management:** Zustand
-- **Icons:** Lucide Icons
-- **Window Management:** Custom implementation
-- **AI Integration:** OpenAI API, LangChain
-- **Security:** WebAssembly, TEE implementation
-- **Authentication:** NextAuth.js
+- **TypeScript**: Strongly typed, good for scalable and maintainable code
+- **React/Next.js**: For dynamic rendering and routing
+- **Shadcn UI**: Component library built on Radix UI
+- **Tailwind CSS**: For styling and responsive design
+- **Framer Motion**: For fluid animations and transitions
+- **Lucide React**: For consistent iconography
+- **LocalStorage/OPFS**: For data persistence
 
-## 🚀 Getting Started
+## Getting Started
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/sagarjethi/abroOS.git
-   cd abroOS
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/abroos.git
 
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   ```
+# Navigate to the project directory
+cd abroos
 
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your API keys and configuration
-   ```
+# Install dependencies
+yarn install
 
-4. Run the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   ```
+# Start the development server
+yarn dev
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+# Build for production
+yarn build
+```
 
-## 📋 Project Checklist
+## Architecture
 
-### AI Features
-- [ ] AI Agent Core
-  - [ ] Natural language processing engine
-  - [ ] Command interpretation system
-  - [ ] Context management
-  - [ ] Task automation framework
-  - [ ] Voice command processing
-  - [ ] Personalization engine
+The application is built using a component-based architecture with React:
 
-- [ ] AI-Powered Apps
-  - [ ] Smart browser with AI assistance
-  - [ ] AI-enhanced file management
-  - [ ] Intelligent terminal
-  - [ ] AI-powered search
-  - [ ] Smart notifications
-  - [ ] Predictive task management
+- **Window Management**: Managed through the WindowsContext
+- **File System**: Implemented with the FileSystemContext
+- **Desktop Environment**: Handles icon display and interaction
+- **Applications**: Standalone components that run within windows
 
-### Security Features
-- [ ] TEE Implementation
-  - [ ] Secure memory management
-  - [ ] Encrypted storage system
-  - [ ] Secure communication channels
-  - [ ] Hardware security integration
-  - [ ] Privacy controls
-  - [ ] Security monitoring
+## Resources & Inspirations
 
-- [ ] Authentication & Authorization
-  - [ ] Multi-factor authentication
-  - [ ] Role-based access control
-  - [ ] Session management
-  - [ ] Security logging
-  - [ ] Audit trails
+- [LinuxOnTheWeb](https://linuxontheweb.org/) - A web-based Linux environment
+- [Dustin Brett's daedalOS](https://github.com/DustinBrett/daedalOS) - A web-based desktop experience that inspired this project
 
-### Core Features
-- [x] Basic window management
-- [x] Desktop grid with icons
-- [x] Taskbar implementation
-- [x] Start menu
-- [ ] Window dragging and resizing
-- [ ] Window snapping
-- [ ] Window animations
-- [ ] Window focus management
+## License
 
-### Apps
-- [x] Basic app registry
-- [x] App window creation
-- [ ] Browser app implementation
-- [ ] File explorer implementation
-- [ ] Settings app implementation
-- [ ] Terminal app implementation
-- [ ] Calculator app implementation
-- [ ] Calendar app implementation
-- [ ] Clock app implementation
-- [ ] Weather app implementation
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-### UI/UX
-- [x] Basic window controls
-- [x] Taskbar design
-- [x] Start menu design
-- [ ] Window shadows and effects
-- [ ] Window transitions
-- [ ] Loading states
-- [ ] Error states
-- [ ] Empty states
-- [ ] Responsive design improvements
+## Acknowledgements
 
-### System Features
-- [ ] System tray
-- [ ] Notifications
-- [ ] Volume control
-- [ ] Brightness control
-- [ ] Network status
-- [ ] Battery status
-- [ ] System time and date
-- [ ] Keyboard shortcuts
-
-### Performance
-- [ ] Code splitting
-- [ ] Lazy loading
-- [ ] Performance optimization
-- [ ] Memory management
-- [ ] Window state persistence
-- [ ] App state persistence
-
-### Testing
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] E2E tests
-- [ ] Performance tests
-- [ ] Accessibility tests
-- [ ] Security tests
-- [ ] AI model tests
-
-### Documentation
-- [x] Basic README
-- [ ] API documentation
-- [ ] Component documentation
-- [ ] State management documentation
-- [ ] Contributing guidelines
-- [ ] Code style guide
-- [ ] Security documentation
-- [ ] AI integration guide
-
-### Deployment
-- [ ] Production build optimization
-- [ ] CI/CD pipeline
-- [ ] Deployment documentation
-- [ ] Environment configuration
-- [ ] Monitoring setup
-- [ ] Security scanning
-- [ ] Performance monitoring
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Next.js](https://nextjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Shadcn UI](https://ui.shadcn.com/)
-- [Zustand](https://github.com/pmndrs/zustand)
-- [Lucide Icons](https://lucide.dev/)
-- [OpenAI](https://openai.com/)
-- [LangChain](https://www.langchain.com/)
-- [WebAssembly](https://webassembly.org/)
-
-## 👥 Authors
-
-- Sagar Jethi - [GitHub](https://github.com/sagarjethi)
-
-## 📞 Support
-
-For support, please open an issue in the GitHub repository or contact the maintainers.
+Special thanks to the open-source community and all the developers who created the libraries and tools that made this project possible.

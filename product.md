@@ -10,7 +10,7 @@ Below is the updated comprehensive product plan for **ABRO** with the added focu
 
 ## **Resources & Inspirations**
 
-- **Stephan’s OS:** An interactive, portfolio-focused web OS that uses persistent client-side storage.
+- **AbroOSan’s OS:** An interactive, portfolio-focused web OS that uses persistent client-side storage.
 - **Dustin Brett’s daedalOS:** A desktop web experience that showcases advanced interactivity.
 - **Linuxontheweb:** Demonstrates a browser-accessible file system akin to a virtual machine environment.
 - **AaronOS:** A web-based OS emphasizing immersion and customization.
