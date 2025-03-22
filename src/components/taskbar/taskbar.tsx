@@ -14,6 +14,9 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { LucideIcon } from 'lucide-react';
+import { useWindow } from '@/contexts/window-context';
+import { TaskbarItem } from './taskbar-item';
+import { SystemTray } from './system-tray';
 
 interface DesktopIcon {
   appId: string;
@@ -96,10 +99,10 @@ function WindowPreview({ windowId, app, isActive, onClose, onMinimize, onMaximiz
 }
 
 export function Taskbar() {
+  const { windows, focusWindow, minimizeWindow } = useWindow();
   const [showStartMenu, setShowStartMenu] = useState(false);
   const [previewWindow, setPreviewWindow] = useState<string | null>(null);
   const previewTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const { windows, activeWindow, minimizeWindow, maximizeWindow, closeWindow } = useWindowStore();
   const { desktopIcons } = useDesktopStore();
 
   // Cleanup timeout on unmount
@@ -153,141 +156,39 @@ export function Taskbar() {
   };
 
   return (
-    <>
-      <div className="fixed bottom-0 left-0 right-0 h-12 bg-zinc-900/90 border-t border-zinc-800 flex items-stretch shadow-lg z-50">
-        {/* Left section - Start button */}
-        <div className="flex items-stretch">
-          <Button
-            variant="ghost"
-            className={cn(
-              'h-full w-12 rounded-none hover:bg-white/10 flex items-center justify-center',
-              showStartMenu && 'bg-white/10'
-            )}
-            onClick={() => setShowStartMenu(!showStartMenu)}
-          >
-            <Menu className="h-5 w-5 text-white" />
-          </Button>
+    <div className="h-12 w-full bg-background border-t flex items-center px-2 fixed bottom-0">
+      <button
+        className="h-8 w-8 flex items-center justify-center rounded-md 
+                   hover:bg-accent transition-colors"
+        onClick={() => setShowStartMenu(!showStartMenu)}
+      >
+        <img src="/icons/start.png" alt="Start" className="h-6 w-6" />
+      </button>
 
-          {/* Active Windows */}
-          <div className="flex items-stretch border-l border-zinc-800">
-            {activeWindows.map(({ appId, windowIds, app }) => {
-              const Icon = app?.icon;
-              const isActive = windowIds.includes(activeWindow || '');
-              const hasMultipleWindows = windowIds.length > 1;
-
-              return (
-                <ContextMenu key={appId}>
-                  <ContextMenuTrigger>
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        'h-full px-4 rounded-none flex items-center gap-2 min-w-[8rem] max-w-[12rem] relative group',
-                        isActive ? 'bg-white/20' : 'hover:bg-white/10 opacity-70'
-                      )}
-                      onMouseEnter={() => handleMouseEnter(windowIds[0])}
-                      onMouseLeave={handleMouseLeave}
-                      onClick={() => handleTaskbarClick(windowIds[0])}
-                    >
-                      {Icon && <Icon className={cn('h-4 w-4', app?.color || 'text-white')} />}
-                      <span className="text-sm text-white truncate">
-                        {app?.name || appId}
-                        {hasMultipleWindows && ` (${windowIds.length})`}
-                      </span>
-                      {hasMultipleWindows && (
-                        <ChevronUp className="h-3 w-3 text-white absolute bottom-1 right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </Button>
-                  </ContextMenuTrigger>
-                  <ContextMenuContent
-                    className="min-w-[200px] bg-zinc-900/95 border border-zinc-800 text-white rounded-md shadow-lg"
-                    onMouseEnter={() => handleMouseEnter(windowIds[0])}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    {windowIds.map((windowId) => (
-                      <ContextMenuItem
-                        key={windowId}
-                        onClick={() => maximizeWindow(windowId)}
-                        className={cn(
-                          'hover:bg-white/10',
-                          windowId === activeWindow && 'bg-white/10'
-                        )}
-                      >
-                        <span className="text-sm">{windowId.split('-')[0]}</span>
-                      </ContextMenuItem>
-                    ))}
-                    <ContextMenuItem
-                      className="text-red-400 hover:bg-red-500/20"
-                      onClick={() => windowIds.forEach(closeWindow)}
-                    >
-                      Close All Windows
-                    </ContextMenuItem>
-                  </ContextMenuContent>
-                </ContextMenu>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right section - System tray */}
-        <div className="flex items-stretch ml-auto">
-          <div className="flex items-stretch border-l border-zinc-800">
-            <Button
-              variant="ghost"
-              className="h-full w-12 rounded-none hover:bg-white/10 flex items-center justify-center"
-            >
-              <Volume2 className="h-4 w-4 text-white" />
-            </Button>
-            <Button
-              variant="ghost"
-              className="h-full w-12 rounded-none hover:bg-white/10 flex items-center justify-center"
-            >
-              <Wifi className="h-4 w-4 text-white" />
-            </Button>
-            <Button
-              variant="ghost"
-              className="h-full w-12 rounded-none hover:bg-white/10 flex items-center justify-center"
-            >
-              <Battery className="h-4 w-4 text-white" />
-            </Button>
-            <Clock />
-          </div>
-        </div>
+      <div className="flex-1 flex items-center gap-1 px-2">
+        {windows.map((window) => (
+          <TaskbarItem
+            key={window.id}
+            title={window.title}
+            icon={window.icon}
+            isActive={!window.isMinimized}
+            onClick={() => {
+              if (window.isMinimized) {
+                minimizeWindow(window.id);
+                focusWindow(window.id);
+              } else {
+                minimizeWindow(window.id);
+              }
+            }}
+          />
+        ))}
       </div>
 
-      {/* Window Previews */}
-      {previewWindow && (
-        <div 
-          className="fixed bottom-12 left-0 p-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200"
-          onMouseEnter={() => setPreviewWindow(previewWindow)}
-          onMouseLeave={handleMouseLeave}
-        >
-          {activeWindows.map(({ windowIds }) => 
-            windowIds.map((windowId) => {
-              if (windowId === previewWindow) {
-                const appId = windowId.split('-')[0];
-                const app = desktopIcons.find(icon => icon.appId === appId);
-                return (
-                  <WindowPreview
-                    key={windowId}
-                    windowId={windowId}
-                    app={app}
-                    isActive={windowId === activeWindow}
-                    onClose={() => closeWindow(windowId)}
-                    onMinimize={() => minimizeWindow(windowId)}
-                    onMaximize={() => maximizeWindow(windowId)}
-                    onFocus={() => maximizeWindow(windowId)}
-                  />
-                );
-              }
-              return null;
-            })
-          )}
-        </div>
-      )}
+      <SystemTray />
 
       {showStartMenu && (
         <StartMenu onClose={() => setShowStartMenu(false)} />
       )}
-    </>
+    </div>
   );
 } 

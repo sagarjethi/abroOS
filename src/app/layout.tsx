@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import './globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { FileSystemProvider } from "@/contexts/FileSystemContext";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "AbrosOS",
-  description: "A modern operating system interface built with Next.js",
+  title: 'AbroOS',
+  description: 'Created by Abro',
 };
 
 export default function RootLayout({
@@ -16,15 +17,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <link type="image/png" sizes="16x16" rel="icon" href="/favi-16x16.png" />
+        <link type="image/png" sizes="32x32" rel="icon" href="/favi-32x32.png" />
+        {/* Can add more favicon sizes if needed */}
+      </head>
+      <body className={`${inter.className}`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+          defaultTheme="dark"
+          forcedTheme="dark"
+          enableSystem={false}
         >
-          {children}
+          <FileSystemProvider>
+            {children}
+          </FileSystemProvider>
         </ThemeProvider>
       </body>
     </html>

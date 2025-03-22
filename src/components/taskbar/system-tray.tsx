@@ -1,20 +1,29 @@
 'use client';
-import { FC } from 'react';
-import { Button } from '@/components/ui/button';
-import { Icons } from '@/components/ui/icons';
+import { useTheme } from 'next-themes'
+import { format } from 'date-fns'
+import { useState, useEffect } from 'react'
 
-export const SystemTray: FC = () => {
+export function SystemTray() {
+  const { theme, setTheme } = useTheme()
+  const [time, setTime] = useState(new Date())
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
   return (
-    <div className="flex items-center gap-1">
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Icons.wifi className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Icons.volume2 className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Icons.battery className="h-4 w-4" />
-      </Button>
+    <div className="flex items-center gap-4 px-4">
+      <button
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        className="p-1 rounded-md hover:bg-accent/50"
+      >
+        {theme === 'dark' ? '🌙' : '☀️'}
+      </button>
+      
+      <div className="text-sm">
+        {format(time, 'HH:mm')}
+      </div>
     </div>
-  );
-}; 
+  )
+} 

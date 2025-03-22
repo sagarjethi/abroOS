@@ -1,16 +1,22 @@
 'use client'
   
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Window } from '../windows/window'
 import { useWindowStore } from '@/hooks/use-window-store'
 import { DesktopIcon } from './desktop-icon'
 import { Taskbar } from '../taskbar/taskbar'
 import { StartMenu } from '../start-menu/start-menu'
 import { useDesktopStore } from '@/hooks/use-desktop-store'
+import { ContextMenu } from './context-menu'
+import { useWindow } from '@/contexts/window-context'
+import { apps } from '@/lib/apps'
   
 export function Desktop() {
   const { windows } = useWindowStore()
   const { desktopIcons, openApp } = useDesktopStore()
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
+  const [showContextMenu, setShowContextMenu] = useState(false)
+  const { addWindow } = useWindow()
   
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -25,15 +31,38 @@ export function Desktop() {
     }
   }, [])
   
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setContextMenuPosition({ x: e.clientX, y: e.clientY })
+    setShowContextMenu(true)
+  }
+  
   return (
-    <div className="relative w-screen h-screen bg-background overflow-hidden">
+    <div 
+      className="h-[calc(100vh-48px)] w-full relative p-4 overflow-hidden"
+      onContextMenu={handleContextMenu}
+      onClick={() => setShowContextMenu(false)}
+    >
       {/* Desktop Icons */}
-      <div className="grid grid-cols-6 gap-4 p-4">
-        {desktopIcons.map((icon) => (
+      <div className="grid grid-cols-6 gap-4 md:grid-cols-8 lg:grid-cols-12">
+        {apps.map((app) => (
           <DesktopIcon
-            key={icon.id}
-            icon={icon}
-            onDoubleClick={() => openApp(icon.appId)}
+            key={app.id}
+            icon={app.icon}
+            label={app.title}
+            onClick={() => {
+              addWindow({
+                id: app.id,
+                title: app.title,
+                icon: app.icon,
+                component: app.component,
+                position: { x: 100, y: 100 },
+                size: { width: 800, height: 600 },
+                isMinimized: false,
+                isMaximized: false,
+                zIndex: 1
+              })
+            }}
           />
         ))}
       </div>
@@ -58,6 +87,14 @@ export function Desktop() {
   
       {/* Start Menu */}
       <StartMenu />
+  
+      {showContextMenu && (
+        <ContextMenu
+          x={contextMenuPosition.x}
+          y={contextMenuPosition.y}
+          onClose={() => setShowContextMenu(false)}
+        />
+      )}
     </div>
   )
 } 

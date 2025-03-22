@@ -64,27 +64,29 @@ export function Calculator() {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-2 p-4">
-      <div className="col-span-4 bg-muted p-4 rounded-lg mb-2">
-        <span className="text-2xl font-mono">{display}</span>
+    <div className="w-full h-full min-h-[300px] p-4">
+      <div className="grid grid-cols-4 gap-2">
+        <div className="col-span-4 bg-muted p-4 rounded-lg mb-2">
+          <span className="text-2xl font-mono">{display}</span>
+        </div>
+        <Button onClick={handleClear} className="col-span-2">C</Button>
+        <Button onClick={() => handleOperator('/')}>/</Button>
+        <Button onClick={() => handleOperator('*')}>×</Button>
+        <Button onClick={() => handleNumber('7')}>7</Button>
+        <Button onClick={() => handleNumber('8')}>8</Button>
+        <Button onClick={() => handleNumber('9')}>9</Button>
+        <Button onClick={() => handleOperator('-')}>-</Button>
+        <Button onClick={() => handleNumber('4')}>4</Button>
+        <Button onClick={() => handleNumber('5')}>5</Button>
+        <Button onClick={() => handleNumber('6')}>6</Button>
+        <Button onClick={() => handleOperator('+')}>+</Button>
+        <Button onClick={() => handleNumber('1')}>1</Button>
+        <Button onClick={() => handleNumber('2')}>2</Button>
+        <Button onClick={() => handleNumber('3')}>3</Button>
+        <Button onClick={handleEqual} className="row-span-2">=</Button>
+        <Button onClick={() => handleNumber('0')} className="col-span-2">0</Button>
+        <Button onClick={() => handleNumber('.')}>.</Button>
       </div>
-      <Button onClick={handleClear} className="col-span-2">C</Button>
-      <Button onClick={() => handleOperator('/')}>/</Button>
-      <Button onClick={() => handleOperator('*')}>×</Button>
-      <Button onClick={() => handleNumber('7')}>7</Button>
-      <Button onClick={() => handleNumber('8')}>8</Button>
-      <Button onClick={() => handleNumber('9')}>9</Button>
-      <Button onClick={() => handleOperator('-')}>-</Button>
-      <Button onClick={() => handleNumber('4')}>4</Button>
-      <Button onClick={() => handleNumber('5')}>5</Button>
-      <Button onClick={() => handleNumber('6')}>6</Button>
-      <Button onClick={() => handleOperator('+')}>+</Button>
-      <Button onClick={() => handleNumber('1')}>1</Button>
-      <Button onClick={() => handleNumber('2')}>2</Button>
-      <Button onClick={() => handleNumber('3')}>3</Button>
-      <Button onClick={handleEqual} className="row-span-2">=</Button>
-      <Button onClick={() => handleNumber('0')} className="col-span-2">0</Button>
-      <Button onClick={() => handleNumber('.')}>.</Button>
     </div>
   );
 } 

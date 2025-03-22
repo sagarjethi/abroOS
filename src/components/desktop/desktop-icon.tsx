@@ -1,33 +1,33 @@
 'use client';
 
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { type DesktopIcon } from '@/types/icons';
+import Image from 'next/image';
 
 interface DesktopIconProps {
-  icon: DesktopIcon;
-  onDoubleClick: () => void;
+  icon: string;
+  label: string;
+  onClick: () => void;
 }
 
-export function DesktopIcon({ icon, onDoubleClick }: DesktopIconProps) {
-  const [isSelected, setIsSelected] = useState(false);
-  const Icon = icon.icon;
-
+export function DesktopIcon({ icon, label, onClick }: DesktopIconProps) {
   return (
-    <div
-      className={cn(
-        'flex flex-col items-center gap-1 p-2 rounded cursor-pointer select-none hover:bg-accent/10 transition-colors',
-        isSelected && 'bg-accent/20'
-      )}
-      onClick={() => setIsSelected(true)}
-      onDoubleClick={onDoubleClick}
+    <button
+      className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-accent/50 
+                 transition-colors group focus:outline-none"
+      onClick={onClick}
     >
-      <div className={cn('w-12 h-12 flex items-center justify-center', icon.color)}>
-        <Icon className="w-8 h-8" />
+      <div className="relative w-16 h-16">
+        <Image
+          src={icon}
+          alt={label}
+          fill
+          className="object-contain p-2"
+        />
       </div>
-      <span className="text-sm text-center text-foreground max-w-[100px] truncate">
-        {icon.name}
+      <span className="text-sm text-center break-words w-full px-1
+                     text-foreground group-hover:text-foreground/80">
+        {label}
       </span>
-    </div>
+    </button>
   );
 } 
