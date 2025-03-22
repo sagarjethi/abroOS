@@ -16,7 +16,16 @@ import {
   HardDrive,
   Folder,
   Globe,
-  Code
+  Code,
+  Wallet as WalletIcon,
+  Wallet,
+  FileText,
+  Gamepad2,
+  CloudSun,
+  Settings,
+  FolderIcon,
+  Trash,
+  CreditCard
 } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
@@ -33,6 +42,8 @@ import { MemoryGame } from "./MemoryGame";
 import { WeatherApp } from "./WeatherApp";
 import { Calendar } from "./Calender";
 import { FileSystemExplorer } from "./FileSystemExplorer";
+import { WalletApp } from "./wallet/WalletApp";
+import { ZeroGFileApp } from "./wallet/ZeroGFileApp";
 import ContextMenu from './ContextMenu';
 import styles from '../styles/Desktop.module.css';
 import { fileSystem } from '@/lib/fileSystem';
@@ -51,6 +62,8 @@ const DEFAULT_ICONS: AppIcon[] = [
   { id: "fileSystem", title: "Files", icon: HardDrive, x: 1, y: 4, color: "text-emerald-400", type: "app" },
   { id: "browser", title: "Browser", icon: Globe, x: 0, y: 5, color: "text-blue-500", type: "app" },
   { id: "codeIndexer", title: "Code Indexer", icon: Code, x: 1, y: 5, color: "text-violet-400", type: "app" },
+  { id: "wallet", title: "Ethereum Wallet", icon: WalletIcon, x: 0, y: 6, color: "text-purple-500", type: "app" },
+  { id: "0gfiles", title: "0G Testnet Storage", icon: HardDrive, x: 1, y: 0, color: "text-blue-400", type: "app" },
 ];
 
 const LOCAL_STORAGE_KEY = 'desktop-icons-v2';
@@ -222,6 +235,14 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
         width = 1000;
         height = 700;
         break;
+      case 'wallet':
+        width = 500;
+        height = 650;
+        break;
+      case '0gfiles':
+        width = 800;
+        height = 600;
+        break;
     }
 
     const position = getRandomWindowPosition(width, height);
@@ -280,6 +301,18 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
       case 'codeIndexer':
         content = {
           type: 'code-indexer'
+        };
+        break;
+      case 'wallet':
+        content = {
+          type: 'default',
+          content: <WalletApp username={currentUser} />
+        };
+        break;
+      case '0gfiles':
+        content = {
+          type: 'default',
+          content: <ZeroGFileApp username={currentUser} />
         };
         break;
       case 'textEditor':
