@@ -2,10 +2,11 @@
 
 import React, { FC } from 'react'
 import { AppConfig } from '@/types/system'
+import { Calculator } from '@/components/apps/calculator'
+import { Settings } from '@/components/apps/settings'
 
 const AppStore: FC = () => <div>App Store</div>
 const Browser: FC = () => <div>Browser</div>
-const Calculator: FC = () => <div>Calculator</div>
 const Calendar: FC = () => <div>Calendar</div>
 const Camera: FC = () => <div>Camera</div>
 const Clock: FC = () => <div>Clock</div>
@@ -16,7 +17,6 @@ const Messages: FC = () => <div>Messages</div>
 const Music: FC = () => <div>Music</div>
 const Notes: FC = () => <div>Notes</div>
 const Photos: FC = () => <div>Photos</div>
-const Settings: FC = () => <div>Settings</div>
 const Terminal: FC = () => <div>Terminal</div>
 const Weather: FC = () => <div>Weather</div>
 

@@ -1,41 +1,33 @@
 'use client';
 
-import { FC } from 'react';
-import Image from 'next/image';
-import { DesktopIcon as DesktopIconType } from '@/types/system';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { type DesktopIcon } from '@/types/icons';
 
-interface DesktopIconProps extends DesktopIconType {
-  onClick: () => void;
-  isSelected?: boolean;
+interface DesktopIconProps {
+  icon: DesktopIcon;
+  onDoubleClick: () => void;
 }
 
-export const DesktopIcon: FC<DesktopIconProps> = ({
-  name,
-  icon,
-  onClick,
-  isSelected = false,
-}) => {
+export function DesktopIcon({ icon, onDoubleClick }: DesktopIconProps) {
+  const [isSelected, setIsSelected] = useState(false);
+  const Icon = icon.icon;
+
   return (
-    <button
-      onClick={onClick}
-      className={`
-        flex flex-col items-center gap-1 p-2 rounded-md
-        hover:bg-white/10 transition-colors
-        ${isSelected ? 'bg-white/20' : ''}
-      `}
+    <div
+      className={cn(
+        'flex flex-col items-center gap-1 p-2 rounded cursor-pointer select-none hover:bg-accent/10 transition-colors',
+        isSelected && 'bg-accent/20'
+      )}
+      onClick={() => setIsSelected(true)}
+      onDoubleClick={onDoubleClick}
     >
-      <div className="relative w-12 h-12">
-        <Image
-          src={icon}
-          alt={name}
-          fill
-          className="object-contain"
-          sizes="48px"
-        />
+      <div className={cn('w-12 h-12 flex items-center justify-center', icon.color)}>
+        <Icon className="w-8 h-8" />
       </div>
-      <span className="text-white text-sm text-center max-w-[100px] truncate">
-        {name}
+      <span className="text-sm text-center text-foreground max-w-[100px] truncate">
+        {icon.name}
       </span>
-    </button>
+    </div>
   );
-}; 
+} 

@@ -1,7 +1,9 @@
 import type { Config } from "tailwindcss"
+import animate from "tailwindcss-animate"
+import typography from "@tailwindcss/typography"
 
 const config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
@@ -52,6 +54,18 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        window: {
+          DEFAULT: "hsl(var(--window))",
+          foreground: "hsl(var(--window-foreground))",
+        },
+        taskbar: {
+          DEFAULT: "hsl(var(--taskbar))",
+          foreground: "hsl(var(--taskbar-foreground))",
+        },
+        desktop: {
+          DEFAULT: "hsl(var(--desktop))",
+          foreground: "hsl(var(--desktop-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -67,14 +81,54 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "window-minimize": {
+          "0%": { transform: "scale(1)", opacity: "1" },
+          "100%": { transform: "scale(0.8)", opacity: "0" },
+        },
+        "window-maximize": {
+          "0%": { transform: "scale(1)", top: "var(--window-top)", left: "var(--window-left)" },
+          "100%": { transform: "scale(1)", top: "0", left: "0" },
+        },
+        "taskbar-hover": {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(-2px)" },
+        },
+        "desktop-icon-hover": {
+          "0%": { transform: "scale(1)" },
+          "100%": { transform: "scale(1.1)" },
+        },
+        "start-menu-open": {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        "start-menu-close": {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "window-minimize": "window-minimize 0.2s ease-out",
+        "window-maximize": "window-maximize 0.2s ease-out",
+        "taskbar-hover": "taskbar-hover 0.2s ease-out",
+        "desktop-icon-hover": "desktop-icon-hover 0.2s ease-out",
+        "start-menu-open": "start-menu-open 0.2s ease-out",
+        "start-menu-close": "start-menu-close 0.2s ease-out",
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      zIndex: {
+        'window': '10',
+        'taskbar': '20',
+        'start-menu': '30',
+        'context-menu': '40',
+        'modal': '50',
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate, typography],
 } satisfies Config
 
 export default config 

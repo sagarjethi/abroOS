@@ -6,8 +6,8 @@ export interface Position {
 }
 
 export interface Size {
-  width: number
-  height: number
+  width: number | string
+  height: number | string
 }
 
 export interface DesktopIcon {
@@ -15,7 +15,7 @@ export interface DesktopIcon {
   title: string
   icon: string
   position: Position
-  onClick: () => void
+  appId: string
 }
 
 export interface AppConfig {
@@ -30,31 +30,36 @@ export interface AppConfig {
 
 export interface WindowState {
   id: string
-  appId: string
   title: string
+  icon: string
+  appId: string
   position: Position
   size: Size
   zIndex: number
-  isMinimized?: boolean
-  isMaximized?: boolean
+  isMinimized: boolean
+  isMaximized: boolean
+  isFocused: boolean
 }
 
-export type WindowAction = 
+export type WindowAction =
   | { type: 'MINIMIZE'; windowId: string }
   | { type: 'MAXIMIZE'; windowId: string }
   | { type: 'CLOSE'; windowId: string }
+  | { type: 'FOCUS'; windowId: string }
+  | { type: 'UPDATE_POSITION'; windowId: string; position: Position }
+  | { type: 'UPDATE_SIZE'; windowId: string; size: Size }
 
 export interface DesktopStore {
   icons: DesktopIcon[]
   windows: WindowState[]
   activeWindowId: string | null
   isStartMenuOpen: boolean
-  
-  addWindow: (windowData: Partial<WindowState> & { appId: string; title: string }) => void
+  addWindow: (windowData: Partial<WindowState>) => void
   removeWindow: (id: string) => void
   setActiveWindow: (id: string) => void
   dispatchWindowAction: (action: WindowAction) => void
   toggleStartMenu: () => void
+  updateIconPosition: (iconId: string, position: Position) => void
 }
 
 export interface Notification {

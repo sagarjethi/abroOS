@@ -1,31 +1,34 @@
 'use client';
 import { FC } from 'react';
-import { 
-  ExitIcon, 
-  PersonIcon, 
-  GearIcon,
-  QuestionMarkCircledIcon 
-} from '@radix-ui/react-icons';
+import { Icons } from '@/components/ui/icons';
+import { Button } from '@/components/ui/button';
 
 export const PowerOptions: FC = () => {
   return (
     <div className="flex flex-col gap-2 p-4 bg-background/80 backdrop-blur-sm">
-      <button className="flex items-center gap-2 p-2 hover:bg-accent rounded-md transition-colors">
-        <PersonIcon className="w-4 h-4" />
+      <Button variant="ghost" className="justify-start">
+        <Icons.user className="w-4 h-4 mr-2" />
         <span>Account</span>
-      </button>
-      <button className="flex items-center gap-2 p-2 hover:bg-accent rounded-md transition-colors">
-        <GearIcon className="w-4 h-4" />
+      </Button>
+      <Button variant="ghost" className="justify-start">
+        <Icons.settings className="w-4 h-4 mr-2" />
         <span>Settings</span>
-      </button>
-      <button className="flex items-center gap-2 p-2 hover:bg-accent rounded-md transition-colors">
-        <QuestionMarkCircledIcon className="w-4 h-4" />
+      </Button>
+      <Button variant="ghost" className="justify-start">
+        <Icons.helpCircle className="w-4 h-4 mr-2" />
         <span>Help</span>
-      </button>
-      <button className="flex items-center gap-2 p-2 hover:bg-accent rounded-md transition-colors">
-        <ExitIcon className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        className="w-full justify-start gap-2"
+        onClick={() => {
+          // TODO: Implement shutdown
+          console.log('Shutting down...');
+        }}
+      >
+        <Icons.power className="w-4 h-4" />
         <span>Shut down</span>
-      </button>
+      </Button>
     </div>
   );
 }; 

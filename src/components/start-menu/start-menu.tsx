@@ -1,65 +1,103 @@
 'use client';
-import { FC } from 'react';
-import Image from 'next/image';
-import { useDesktopStore } from '@/lib/store/desktop-store';
-import { APP_REGISTRY } from '@/lib/apps/registry';
 
-export const StartMenu: FC = () => {
-  const { addWindow, toggleStartMenu } = useDesktopStore();
+import { useEffect, useRef } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { useDesktopStore } from '@/hooks/use-desktop-store'
+import { cn } from '@/lib/utils'
+import { Power } from 'lucide-react'
 
-  const handleAppClick = (appId: string) => {
-    addWindow(appId);
-    toggleStartMenu();
-  };
+interface StartMenuProps {
+  onClose: () => void
+}
+
+export function StartMenu({ onClose }: StartMenuProps) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { desktopIcons, openApp } = useDesktopStore()
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        onClose()
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [onClose])
+
+  const recentApps = desktopIcons.slice(0, 5)
+  const allApps = desktopIcons
 
   return (
-    <div className="fixed bottom-14 left-4 w-80 bg-background/80 backdrop-blur-md rounded-lg border border-border shadow-lg">
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-accent/50 flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-6 h-6"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
+    <AnimatePresence>
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.2 }}
+        className="fixed bottom-12 left-0 w-80 bg-zinc-900/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/90 rounded-t-lg shadow-xl border border-zinc-800 p-4 z-50"
+      >
+        <div className="space-y-4">
           <div>
-            <h3 className="font-medium">User</h3>
-            <p className="text-sm text-muted-foreground">Local Account</p>
+            <h2 className="text-sm font-medium mb-2 text-zinc-400">Recent</h2>
+            <div className="grid grid-cols-5 gap-2">
+              {recentApps.map((app) => {
+                const Icon = app.icon
+                return (
+                  <Button
+                    key={app.id}
+                    variant="ghost"
+                    size="icon"
+                    className="h-12 w-12 rounded-lg hover:bg-white/10"
+                    onClick={() => {
+                      openApp(app.appId)
+                      onClose()
+                    }}
+                  >
+                    <Icon className={cn('h-6 w-6', app.color)} />
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-medium mb-2 text-zinc-400">All Apps</h2>
+            <div className="grid grid-cols-4 gap-2">
+              {allApps.map((app) => {
+                const Icon = app.icon
+                return (
+                  <Button
+                    key={app.id}
+                    variant="ghost"
+                    className="h-20 w-full flex flex-col items-center justify-center gap-1 rounded-lg hover:bg-white/10"
+                    onClick={() => {
+                      openApp(app.appId)
+                      onClose()
+                    }}
+                  >
+                    <Icon className={cn('h-8 w-8', app.color)} />
+                    <span className="text-xs text-white">{app.name}</span>
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-zinc-800">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 text-white hover:bg-white/10"
+              onClick={onClose}
+            >
+              <Power className="h-4 w-4" />
+              <span>Shut Down</span>
+            </Button>
           </div>
         </div>
-      </div>
-      <div className="p-2">
-        <h4 className="px-2 py-1.5 text-sm font-medium text-muted-foreground">Apps</h4>
-        <div className="grid grid-cols-3 gap-2">
-          {Object.values(APP_REGISTRY).map((app) => (
-            <button
-              key={app.id}
-              onClick={() => handleAppClick(app.id)}
-              className="flex flex-col items-center gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors"
-            >
-              <Image
-                src={app.icon}
-                alt={app.name}
-                width={32}
-                height={32}
-                className="rounded-sm"
-              />
-              <span className="text-xs text-center font-medium truncate w-full">
-                {app.name}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}; 
+      </motion.div>
+    </AnimatePresence>
+  )
+} 

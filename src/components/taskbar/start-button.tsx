@@ -1,6 +1,7 @@
 'use client';
 import { FC } from 'react';
-import { HomeIcon } from '@radix-ui/react-icons';
+import { Button } from '@/components/ui/button';
+import { Icons } from '@/components/ui/icons';
 
 interface StartButtonProps {
   onClick: () => void;
@@ -8,11 +9,13 @@ interface StartButtonProps {
 
 export const StartButton: FC<StartButtonProps> = ({ onClick }) => {
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-10 w-10"
       onClick={onClick}
-      className="p-2 hover:bg-white/10 rounded-md transition-colors"
     >
-      <HomeIcon className="w-6 h-6 text-white" />
-    </button>
+      <Icons.menu className="h-5 w-5" />
+    </Button>
   );
 }; 

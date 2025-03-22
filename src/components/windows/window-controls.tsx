@@ -1,10 +1,7 @@
 'use client';
 import { FC } from 'react';
-import { 
-  MinusIcon, 
-  SquareIcon, 
-  Cross2Icon 
-} from '@radix-ui/react-icons';
+import { Icons } from '@/components/ui/icons';
+import { Button } from '@/components/ui/button';
 
 interface WindowControlsProps {
   onMinimize: () => void;
@@ -19,24 +16,30 @@ export const WindowControls: FC<WindowControlsProps> = ({
 }) => {
   return (
     <div className="flex items-center gap-1">
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 hover:bg-white/10"
         onClick={onMinimize}
-        className="p-1 hover:bg-white/10 rounded-md transition-colors"
       >
-        <MinusIcon className="w-4 h-4 text-white" />
-      </button>
-      <button
+        <Icons.minimize className="h-4 w-4 text-white" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 hover:bg-white/10"
         onClick={onMaximize}
-        className="p-1 hover:bg-white/10 rounded-md transition-colors"
       >
-        <SquareIcon className="w-4 h-4 text-white" />
-      </button>
-      <button
+        <Icons.maximize className="h-4 w-4 text-white" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 hover:bg-red-500"
         onClick={onClose}
-        className="p-1 hover:bg-red-500 rounded-md transition-colors"
       >
-        <Cross2Icon className="w-4 h-4 text-white" />
-      </button>
+        <Icons.close className="h-4 w-4 text-white" />
+      </Button>
     </div>
   );
 }; 
