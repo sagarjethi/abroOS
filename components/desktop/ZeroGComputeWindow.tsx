@@ -62,19 +62,27 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Load API key from localStorage on component mount
   useEffect(() => {
     const storedApiKey = localStorage.getItem('0g-compute-api-key');
     if (storedApiKey) {
       setApiKey(storedApiKey);
       setIsApiKeySet(true);
       zeroGCompute.setApiKey(storedApiKey);
-      loadServices();
     }
+    // Load services regardless of API key
+    loadServices();
   }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsMinimized(false);
+    }
+  }, [isOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -160,6 +168,7 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
       description: "API key saved successfully",
     });
     
+    // Reload services with the new API key
     loadServices();
   };
 
@@ -167,13 +176,14 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
     localStorage.removeItem('0g-compute-api-key');
     setApiKey('');
     setIsApiKeySet(false);
-    setServices([]);
-    setSelectedService('');
     
     toast({
       title: "API Key Removed",
       description: "Your API key has been cleared",
     });
+    
+    // Reload services with demo mode
+    loadServices();
   };
 
   const handleServiceChange = (serviceId: string) => {
@@ -195,15 +205,6 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
 
   const sendChatMessage = async () => {
     if (!chatInput.trim()) return;
-    
-    if (!isApiKeySet) {
-      toast({
-        title: "API Key Required",
-        description: "Please set your 0G Compute API key in the Settings tab",
-        variant: "destructive",
-      });
-      return;
-    }
     
     if (!selectedService) {
       toast({
@@ -367,16 +368,14 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
                       </Select>
                     </div>
                     
-                    {!isApiKeySet && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => document.getElementById('settings-tab')?.click()}
-                      >
-                        <Key className="h-4 w-4 mr-2" />
-                        Set API Key
-                      </Button>
-                    )}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => document.getElementById('settings-tab')?.click()}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Settings
+                    </Button>
                   </div>
                 </div>
 
@@ -444,13 +443,11 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       placeholder={
-                        !isApiKeySet 
-                          ? "Please set your API key in Settings" 
-                          : !selectedService 
+                        !selectedService 
                           ? "Please select a service" 
                           : "Type your message..."
                       }
-                      disabled={!isApiKeySet || !selectedService || isLoading}
+                      disabled={!selectedService || isLoading}
                       className="min-h-[60px] resize-none"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -461,7 +458,7 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
                     />
                     <Button 
                       onClick={sendChatMessage}
-                      disabled={!isApiKeySet || !selectedService || !chatInput.trim() || isLoading}
+                      disabled={!selectedService || !chatInput.trim() || isLoading}
                       className="px-3"
                     >
                       {isLoading ? (
@@ -485,20 +482,20 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
                           API Key Settings
                         </CardTitle>
                         <CardDescription>
-                          Enter your 0G Compute API key to access computing services
+                          API key is optional. The system works in demo mode without an API key.
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="api-key">API Key</Label>
+                            <Label htmlFor="api-key">API Key (Optional)</Label>
                             <div className="flex gap-2">
                               <Input
                                 id="api-key"
                                 type="password"
                                 value={apiKey}
                                 onChange={(e) => setApiKey(e.target.value)}
-                                placeholder="Enter your API key"
+                                placeholder="Enter your API key (optional)"
                                 className="flex-1"
                               />
                               <Button onClick={setApiKeyHandler} disabled={!apiKey.trim()}>
@@ -507,7 +504,7 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
                             </div>
                           </div>
                           
-                          {isApiKeySet && (
+                          {isApiKeySet ? (
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-500">
                                 <CheckCircle className="h-4 w-4" />
@@ -516,6 +513,11 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
                               <Button variant="destructive" size="sm" onClick={clearApiKey}>
                                 Clear API Key
                               </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Info className="h-4 w-4" />
+                              <span>Running in demo mode - no API key required</span>
                             </div>
                           )}
                         </div>
@@ -530,7 +532,7 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
                           Available Services
                         </CardTitle>
                         <CardDescription>
-                          List of compute services available on your account
+                          List of compute services available
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -556,23 +558,17 @@ export function ZeroGComputeWindow({ isOpen, onClose }: ZeroGComputeWindowProps)
                               </div>
                             ))}
                           </div>
-                        ) : isApiKeySet ? (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <p>No services found on your account</p>
-                          </div>
                         ) : (
                           <div className="text-center py-8 text-muted-foreground">
-                            <p>Please set your API key to view available services</p>
+                            <p>No services available</p>
                           </div>
                         )}
                       </CardContent>
-                      {isApiKeySet && (
-                        <CardFooter>
-                          <Button variant="outline" className="w-full" onClick={loadServices}>
-                            Refresh Services
-                          </Button>
-                        </CardFooter>
-                      )}
+                      <CardFooter>
+                        <Button variant="outline" className="w-full" onClick={loadServices}>
+                          Refresh Services
+                        </Button>
+                      </CardFooter>
                     </Card>
                   </div>
                 </ScrollArea>

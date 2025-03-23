@@ -47,7 +47,7 @@ class ZeroGComputeService {
   private currentProviderAddress: string | null = null;
 
   private constructor() {
-    // Create a mock provider for demo purposes
+    // Initialize with demo configuration regardless of API key
     if (typeof window !== 'undefined') {
       this.initPromise = this.initialize();
     }
@@ -62,8 +62,10 @@ class ZeroGComputeService {
 
   setApiKey(key: string) {
     this.apiKey = key;
-    // Reinitialize with the new key
-    this.initPromise = this.initialize();
+    // Reinitialize with the new key if needed
+    if (!this.initialized) {
+      this.initPromise = this.initialize();
+    }
   }
 
   setProviderAddress(address: string) {
@@ -76,33 +78,57 @@ class ZeroGComputeService {
 
   private async initialize(): Promise<void> {
     try {
-      if (!this.apiKey) {
-        throw new Error('API key not set');
-      }
+      // Remove the API key check - we'll create a demo environment regardless
+      // if (!this.apiKey) {
+      //   throw new Error('API key not set');
+      // }
 
-      // In a real implementation, we would use the API key to get a provider
-      // For demo purposes, we're creating a provider directly
-      this.provider = new ethers.providers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
+      // Create a demo provider regardless of API key
+      try {
+        this.provider = new ethers.providers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
+      } catch (error) {
+        console.error("Failed to connect to RPC provider, creating demo provider");
+        // If RPC fails, create a local mock provider
+        this.provider = new ethers.providers.JsonRpcProvider();
+      }
       
-      // In a real implementation, we would derive the wallet from the API key
-      // For demo purposes, we're creating a random wallet
+      // Always create a demo wallet for development
       this.wallet = ethers.Wallet.createRandom().connect(this.provider);
       
-      console.log("ZeroGComputeService initialized with wallet:", this.wallet.address);
+      console.log("ZeroGComputeService initialized with demo wallet:", this.wallet.address);
       this.initialized = true;
     } catch (error: any) {
       console.error("Failed to initialize ZeroGComputeService:", error.message);
-      throw error;
+      // Don't throw - instead, create a minimal working setup
+      this.initialized = true;
+      
+      // Create minimal wallet and provider if they don't exist yet
+      if (!this.wallet || !this.provider) {
+        try {
+          this.provider = new ethers.providers.JsonRpcProvider();
+          this.wallet = ethers.Wallet.createRandom().connect(this.provider);
+        } catch (e) {
+          console.error("Failed to create fallback wallet/provider:", e);
+        }
+      }
     }
   }
 
   private async ensureInitialized(): Promise<void> {
     if (!this.initialized && this.initPromise) {
-      await this.initPromise;
+      try {
+        await this.initPromise;
+      } catch (e) {
+        console.error("Initialization failed but continuing with demo mode:", e);
+        this.initialized = true; // Force initialization to proceed with demo features
+      }
     }
     
     if (!this.wallet || !this.provider) {
-      throw new Error("ZeroGComputeService not properly initialized");
+      // Create minimal working setup for demo
+      this.provider = new ethers.providers.JsonRpcProvider();
+      this.wallet = ethers.Wallet.createRandom().connect(this.provider);
+      this.initialized = true;
     }
   }
 

@@ -1,118 +1,118 @@
-"use client";
-
 import { ethers } from 'ethers';
 import CryptoJS from 'crypto-js';
 
 // Network configuration interface
 export interface NetworkConfig {
+  chainId: number;
   name: string;
   rpcUrl: string;
-  chainId: number;
-  currencySymbol: string;
+  symbol: string;
   blockExplorerUrl: string;
-  isTestnet: boolean;
 }
 
 // Available networks
 export const NETWORKS: Record<string, NetworkConfig> = {
   // Test networks
   sepolia: {
-    name: "Sepolia",
-    rpcUrl: "https://rpc.sepolia.org",
     chainId: 11155111,
-    currencySymbol: "ETH",
+    name: "Sepolia",
+    rpcUrl: "https://sepolia.infura.io/v3/your-api-key",
+    symbol: "ETH",
     blockExplorerUrl: "https://sepolia.etherscan.io",
-    isTestnet: true
   },
   goerli: {
-    name: "Goerli",
-    rpcUrl: "https://rpc.goerli.mudit.blog",
     chainId: 5,
-    currencySymbol: "ETH",
+    name: "Goerli",
+    rpcUrl: "https://goerli.infura.io/v3/your-api-key",
+    symbol: "ETH",
     blockExplorerUrl: "https://goerli.etherscan.io",
-    isTestnet: true
   },
   mumbai: {
+    chainId: 80001,
     name: "Polygon Mumbai",
     rpcUrl: "https://rpc-mumbai.maticvigil.com",
-    chainId: 80001,
-    currencySymbol: "MATIC",
+    symbol: "MATIC",
     blockExplorerUrl: "https://mumbai.polygonscan.com",
-    isTestnet: true
   },
   // 0G Testnet
   zerogtestnet: {
+    chainId: 16600,
     name: "0G Testnet",
     rpcUrl: "https://evmrpc-testnet.0g.ai",
-    chainId: 16600,
-    currencySymbol: "A0GI",
+    symbol: "A0GI",
     blockExplorerUrl: "https://blockexplorer-testnet.0g.ai",
-    isTestnet: true
   },
   // Mainnet networks
   ethereum: {
-    name: "Ethereum",
-    rpcUrl: "https://mainnet.infura.io/v3/your-infura-key",
     chainId: 1,
-    currencySymbol: "ETH",
+    name: "Ethereum",
+    rpcUrl: "https://mainnet.infura.io/v3/your-api-key",
+    symbol: "ETH",
     blockExplorerUrl: "https://etherscan.io",
-    isTestnet: false
   },
   polygon: {
+    chainId: 137,
     name: "Polygon",
     rpcUrl: "https://polygon-rpc.com",
-    chainId: 137,
-    currencySymbol: "MATIC",
+    symbol: "MATIC",
     blockExplorerUrl: "https://polygonscan.com",
-    isTestnet: false
   }
 };
 
-// Wallet service class to manage Ethereum wallet operations
-export class WalletService {
-  private static instance: WalletService;
+// Wallet service class to manage EVM wallet operations
+export class EVMWalletService {
+  private static instance: EVMWalletService;
   private provider: ethers.providers.JsonRpcProvider;
-  private currentNetwork: string = 'sepolia';
+  private currentNetworkId: string = 'sepolia'; // Default to Sepolia testnet
   private customNetworks: Record<string, NetworkConfig> = {};
   
   private constructor() {
-    // Default to Sepolia testnet
-    this.provider = new ethers.providers.JsonRpcProvider(NETWORKS.sepolia.rpcUrl);
-    
-    // Try to load saved custom networks from localStorage if available
+    // Check if running in browser environment
     if (typeof window !== 'undefined') {
+      // Load custom networks from localStorage
       try {
         const savedNetworks = localStorage.getItem('customNetworks');
         if (savedNetworks) {
           this.customNetworks = JSON.parse(savedNetworks);
         }
+
+        // Load last used network from localStorage
+        const lastNetwork = localStorage.getItem('lastNetwork');
+        if (lastNetwork && (NETWORKS[lastNetwork] || this.customNetworks[lastNetwork])) {
+          this.currentNetworkId = lastNetwork;
+        }
       } catch (error) {
-        console.error('Failed to load custom networks:', error);
+        console.error('Error loading from localStorage:', error);
       }
     }
+
+    // Initialize provider with current network
+    const network = this.getCurrentNetwork();
+    this.provider = new ethers.providers.JsonRpcProvider(network.rpcUrl);
   }
   
   // Singleton pattern
-  public static getInstance(): WalletService {
-    if (!WalletService.instance) {
-      WalletService.instance = new WalletService();
+  public static getInstance(): EVMWalletService {
+    if (!EVMWalletService.instance) {
+      EVMWalletService.instance = new EVMWalletService();
     }
-    return WalletService.instance;
+    return EVMWalletService.instance;
   }
   
   // Get the current provider
   public getProvider(): ethers.providers.JsonRpcProvider {
-    return this.provider;
+    const network = this.getCurrentNetwork();
+    return new ethers.providers.JsonRpcProvider(network.rpcUrl);
   }
   
   // Get current network ID
   public getCurrentNetworkId(): string {
-    return this.currentNetwork;
+    return this.currentNetworkId;
   }
   
   // Get current network config
   public getCurrentNetwork(): NetworkConfig {
-    return NETWORKS[this.currentNetwork];
+    return NETWORKS[this.currentNetworkId] || this.customNetworks[this.currentNetworkId];
   }
   
   // Get all available networks including custom networks
@@ -192,14 +192,15 @@ export class WalletService {
   }
   
   // Change active network
-  public setNetwork(networkId: string): void {
-    const allNetworks = this.getAvailableNetworks();
-    if (!allNetworks[networkId]) {
-      throw new Error(`Network ${networkId} not supported`);
+  public setNetwork(networkId: string): boolean {
+    if (NETWORKS[networkId] || this.customNetworks[networkId]) {
+      this.currentNetworkId = networkId;
+      this.saveToLocalStorage('lastNetwork', networkId);
+      const network = NETWORKS[networkId] || this.customNetworks[networkId];
+      this.provider = new ethers.providers.JsonRpcProvider(network.rpcUrl);
+      return true;
     }
-    
-    this.currentNetwork = networkId;
-    this.provider = new ethers.providers.JsonRpcProvider(allNetworks[networkId].rpcUrl);
+    return false;
   }
   
   // Custom provider setter (for custom RPC URLs)
@@ -224,73 +225,42 @@ export class WalletService {
     return gas.toString();
   }
   
-  // Format address for display (shortening)
+  // Format address to show abbreviated form (e.g., 0x1234...5678)
   public formatAddress(address: string): string {
-    if (!address) return '';
+    if (!address || address.length < 10) return address;
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   }
   
   // Get a block explorer URL for an address or transaction
   public getExplorerUrl(hashOrAddress: string, type: 'address' | 'tx' = 'address'): string {
-    const network = NETWORKS[this.currentNetwork];
+    const network = NETWORKS[this.currentNetworkId];
     return `${network.blockExplorerUrl}/${type}/${hashOrAddress}`;
   }
   
   // Add a custom network
-  public addCustomNetwork(
-    id: string,
-    networkConfig: NetworkConfig
-  ): boolean {
-    try {
-      // Validate the network config
-      if (!networkConfig.name || !networkConfig.rpcUrl || !networkConfig.chainId) {
-        throw new Error('Invalid network configuration');
-      }
-      
-      // Test the RPC URL
-      const testProvider = new ethers.providers.JsonRpcProvider(networkConfig.rpcUrl);
-      
-      // Add to custom networks
-      this.customNetworks[id] = networkConfig;
-      
-      // Save to localStorage if available
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('customNetworks', JSON.stringify(this.customNetworks));
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to add custom network:', error);
+  public addCustomNetwork(id: string, config: NetworkConfig): boolean {
+    if (NETWORKS[id] || this.customNetworks[id]) {
       return false;
     }
+
+    this.customNetworks[id] = config;
+    this.saveToLocalStorage('customNetworks', this.customNetworks);
+    return true;
   }
   
   // Remove a custom network
   public removeCustomNetwork(id: string): boolean {
-    // Cannot remove default networks
-    if (NETWORKS[id]) {
-      return false;
-    }
-    
-    // Check if network exists
     if (!this.customNetworks[id]) {
       return false;
     }
-    
-    // Check if this is the active network
-    if (this.currentNetwork === id) {
-      // Switch to a default network
-      this.setNetwork('sepolia');
+
+    if (this.currentNetworkId === id) {
+      this.currentNetworkId = 'sepolia';
+      this.saveToLocalStorage('lastNetwork', 'sepolia');
     }
-    
-    // Remove from custom networks
+
     delete this.customNetworks[id];
-    
-    // Save to localStorage if available
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('customNetworks', JSON.stringify(this.customNetworks));
-    }
-    
+    this.saveToLocalStorage('customNetworks', this.customNetworks);
     return true;
   }
   
@@ -298,6 +268,50 @@ export class WalletService {
   public getCustomNetworks(): Record<string, NetworkConfig> {
     return { ...this.customNetworks };
   }
+
+  // Validate private key format
+  public validatePrivateKey(privateKey: string): boolean {
+    try {
+      // Check if it's a valid hex string
+      if (!/^0x[0-9a-fA-F]{64}$/.test(privateKey)) {
+        return false;
+      }
+      
+      // Try to create a wallet to validate
+      new ethers.Wallet(privateKey);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Get wallet details without connecting
+  public getWalletDetails(privateKey: string): { address: string; network: string } | null {
+    try {
+      const wallet = new ethers.Wallet(privateKey);
+      return {
+        address: wallet.address,
+        network: this.currentNetworkId
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  // Save to localStorage helper
+  private saveToLocalStorage(key: string, value: any): void {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (error) {
+        console.error('Error saving to localStorage:', error);
+      }
+    }
+  }
 }
 
-export const walletService = WalletService.getInstance(); 
+// Export the singleton instance
+export const evmWalletService = EVMWalletService.getInstance();
+
+// For backward compatibility
+export const walletService = evmWalletService; 
