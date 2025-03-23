@@ -3,6 +3,7 @@
 import { AIModelSettingsShortcut } from './AIModelSettingsShortcut';
 import { ComputerTesterShortcut } from './ComputerTesterShortcut';
 import { ZeroGComputeShortcut } from './ZeroGComputeShortcut';
+import { SecretVaultShortcut } from '../nillion/SecretVaultShortcut';
 import { cn } from '@/lib/utils';
 
 export function Desktop() {
@@ -16,6 +17,7 @@ export function Desktop() {
         <AIModelSettingsShortcut />
         <ComputerTesterShortcut />
         <ZeroGComputeShortcut />
+        <SecretVaultShortcut />
       </div>
 
       {/* Desktop Overlay Effects */}

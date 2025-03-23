@@ -11,6 +11,7 @@ import { AboutMeContent } from "./AboutMeContent";
 import { SystemDashboard } from "./SystemDashboard";
 import { Browser } from "./Browser";
 import { CodeIndexer } from "./CodeIndexer";
+import { AISearchAgent } from "./ai-search/AISearchAgent";
 import type { Window as WindowType, WindowContent } from "@/types/global";
 
 const MIN_WIDTH = 200;
@@ -79,25 +80,38 @@ function ResizeHandle({ direction, onResizeStart }: ResizeHandleProps) {
   );
 }
 
-function renderWindowContent(content: WindowContent, id: string) {
+function renderContent(content: WindowContent): React.ReactNode {
   switch (content.type) {
     case 'text-editor':
-      return <TextEditor initialContent="" fileId={content.id} />;
+      return <TextEditor id={content.id || ''} />;
     case 'file-explorer':
-      return (
-        <FileExplorer />
-      );
+      if (content.folderId) {
+        return <FileExplorer folderId={content.folderId} />;
+      }
+      if (content.icons) {
+        return <FileExplorer icons={content.icons} />;
+      }
+      return <FileExplorer />;
     case 'about':
-      return <AboutMeContent />;
+      return content.content;
     case 'browser':
-      return <Browser id={id} />;
+      return <Browser />;
     case 'code-indexer':
       return <CodeIndexer />;
+    case 'ai-search':
+      return <AISearchAgent initialQuery={content.initialQuery || ''} initialMode={content.initialMode} />;
     case 'default':
-      if (id === 'myPC') {
-        return <SystemDashboard />;
+      if (content.content) {
+        return content.content;
       }
-      return content.content;
+      return <div className="p-4">Default content</div>;
+    case 'custom':
+      if (content.render) {
+        return content.render({ onClose: () => closeWindow(window.id) });
+      }
+      return <div className="p-4">Custom content without renderer</div>;
+    default:
+      return <div className="p-4">Unknown content type</div>;
   }
 }
 
@@ -141,54 +155,47 @@ export default function Window(props: WindowType) {
   return (
     <motion.div
       ref={windowRef}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        x: state.x,
-        y: state.y,
-        width: state.width,
-        height: state.height,
+      className={cn(
+        "fixed rounded-lg shadow-lg flex flex-col bg-background border",
+        "overflow-hidden",
+        isResizing && "transition-none",
+        isDragging && "cursor-grabbing",
+        props.focused ? "border-primary" : "border-muted"
+      )}
+      style={{
+        left: state.x,
+        top: state.y,
+        width: state.isMaximized ? "100%" : state.width,
+        height: state.isMaximized ? `calc(100% - ${TASKBAR_HEIGHT}px)` : state.height,
         zIndex: props.zIndex,
       }}
-      transition={{
-        duration: 0.2,
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
+      animate={{
+        opacity: isDragging || isResizing ? 0.7 : 1,
       }}
-      className={cn(
-        "fixed bg-background/95 backdrop-blur rounded-lg shadow-lg overflow-hidden border border-border",
-        props.focused ? "shadow-xl" : "shadow-md",
-        (isDragging || isResizing) && "pointer-events-none select-none",
-        isResizing && "transition-none"
-      )}
-      onClick={() => !props.focused && focusWindow(props.id)}
-      style={{ zIndex: props.zIndex }}
+      transition={{ duration: 0.1 }}
+      onClick={() => focusWindow(props.id)}
     >
       <WindowTitleBar
         title={props.title}
         isMaximized={state.isMaximized}
+        onPointerDown={handleDragStart}
+        onClose={() => closeWindow(props.id)}
         onMinimize={() => updateWindow(props.id, { minimized: true })}
         onMaximize={toggleMaximize}
-        onClose={() => closeWindow(props.id)}
-        onPointerDown={handleDragStart}
       />
+      <div className="flex-1 overflow-hidden">{renderContent(props.content)}</div>
 
-      <div className="p-4 overflow-auto" style={{ height: `calc(100% - 32px)` }}>
-        {renderWindowContent(props.content, props.id)}
-      </div>
-
+      {/* Resize handles */}
       {!state.isMaximized && (
         <>
           <ResizeHandle direction="n" onResizeStart={handleResizeStart} />
-          <ResizeHandle direction="s" onResizeStart={handleResizeStart} />
           <ResizeHandle direction="e" onResizeStart={handleResizeStart} />
+          <ResizeHandle direction="s" onResizeStart={handleResizeStart} />
           <ResizeHandle direction="w" onResizeStart={handleResizeStart} />
-          <ResizeHandle direction="nw" onResizeStart={handleResizeStart} />
           <ResizeHandle direction="ne" onResizeStart={handleResizeStart} />
-          <ResizeHandle direction="sw" onResizeStart={handleResizeStart} />
           <ResizeHandle direction="se" onResizeStart={handleResizeStart} />
+          <ResizeHandle direction="sw" onResizeStart={handleResizeStart} />
+          <ResizeHandle direction="nw" onResizeStart={handleResizeStart} />
         </>
       )}
     </motion.div>

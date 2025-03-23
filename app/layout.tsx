@@ -2,13 +2,14 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { FileSystemProvider } from "@/contexts/FileSystemContext";
+import { WalletProvider } from "@/contexts/WalletContext";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'AbroOSOS',
-  description: 'Created by AbroOSan Volynets',
+  title: 'abroOS',
+  description: 'A web3 operating system',
 };
 
 export default function RootLayout({
@@ -27,12 +28,13 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          forcedTheme="dark"
-          enableSystem={false}
+          enableSystem
+          disableTransitionOnChange
         >
-          <FileSystemProvider>
+          <WalletProvider>
             {children}
-          </FileSystemProvider>
+            <Toaster />
+          </WalletProvider>
         </ThemeProvider>
       </body>
     </html>

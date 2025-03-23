@@ -1,6 +1,7 @@
 "use client";
 
 import CryptoJS from 'crypto-js';
+import { evmWalletService } from './wallet-service';
 
 // Constants
 const STORAGE_KEY_PREFIX = 'abroOs_wallet_';
@@ -14,6 +15,8 @@ export interface UserWalletData {
   address: string;
   username: string;
   lastAccessed: number;
+  isImported: boolean; // Flag to indicate if wallet was imported via private key
+  createdAt: number; // Timestamp when the wallet was created
 }
 
 // Interface for wallet database operations result
@@ -83,6 +86,15 @@ export class WalletStorageService {
     await this.init();
     
     try {
+      // Check if wallet already exists
+      const existingWallet = await this.getWallet(walletData.username);
+      if (existingWallet.success && existingWallet.data) {
+        // If wallet exists and is imported, don't allow overwriting
+        if (existingWallet.data.isImported && !walletData.isImported) {
+          return { success: false, error: 'Cannot overwrite imported wallet' };
+        }
+      }
+      
       if (this.db) {
         // Store in IndexedDB
         return this.storeWalletInIndexedDB(walletData);
@@ -158,6 +170,32 @@ export class WalletStorageService {
     } catch (error) {
       console.error('Error getting all wallets:', error);
       return { success: false, error: 'Failed to get all wallets' };
+    }
+  }
+  
+  // Import wallet from private key
+  public async importWalletFromPrivateKey(
+    username: string,
+    privateKey: string,
+    password: string
+  ): Promise<WalletStorageResult<void>> {
+    try {
+      const wallet = evmWalletService.getWalletFromPrivateKey(privateKey);
+      const encryptedWallet = evmWalletService.encryptWallet(wallet, password);
+      
+      const walletData: UserWalletData = {
+        encryptedWallet,
+        address: wallet.address,
+        username,
+        lastAccessed: Date.now(),
+        isImported: true,
+        createdAt: Date.now()
+      };
+      
+      return await this.storeWallet(walletData);
+    } catch (error) {
+      console.error('Error importing wallet:', error);
+      return { success: false, error: 'Failed to import wallet' };
     }
   }
   

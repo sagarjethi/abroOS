@@ -4,9 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useWallet } from '@/contexts/WalletContext';
 import { Loader2, HardDrive, WalletIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ZeroGFiles } from '@/components/ZeroGFiles';
-import { walletAccessor } from '@/lib/wallet/wallet-accessor';
 import { Badge } from '@/components/ui/badge';
 
 interface ZeroGFileAppProps {
@@ -14,7 +13,7 @@ interface ZeroGFileAppProps {
 }
 
 export function ZeroGFileApp({ username }: ZeroGFileAppProps) {
-  const { loadWallet, walletAddress, isLoading } = useWallet();
+  const { loadWallet, address: walletAddress, isLoading, formatAddress } = useWallet();
   const [walletConnected, setWalletConnected] = useState(false);
   
   useEffect(() => {
@@ -73,9 +72,9 @@ export function ZeroGFileApp({ username }: ZeroGFileAppProps) {
             Testnet
           </Badge>
         </div>
-        <div className="flex items-center text-xs text-muted-foreground">
-          <WalletIcon className="h-3 w-3 mr-1" />
-          <span>{walletAccessor.formatAddress(walletAddress || '')}</span>
+        <div className="flex items-center text-xs">
+          <WalletIcon className="h-3 w-3 mr-1 text-green-500" />
+          <span className="font-medium">{walletAddress ? formatAddress(walletAddress) : ''}</span>
         </div>
       </div>
       

@@ -86,7 +86,7 @@ export function useUpload(signer: ethers.Signer | null): UseUploadReturn {
     try {
       // Reset state and start upload
       setStatus({
-        isUploading: true,
+        isUploading: false,
         isSuccess: false,
         progress: 0,
         statusMessage: 'Preparing file for upload...',
@@ -99,109 +99,83 @@ export function useUpload(signer: ethers.Signer | null): UseUploadReturn {
       setStatus(prev => ({ 
         ...prev, 
         progress: 10,
-        statusMessage: 'Calculating storage fees...'
-      }));
-      
-      const fileSize = file.size;
-      
-      // Check if file is too large
-      const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-      if (fileSize > MAX_FILE_SIZE) {
-        throw new Error(`File size exceeds maximum allowed (100MB). Current file size: ${(fileSize / (1024 * 1024)).toFixed(2)}MB`);
-      }
-      
-      // Mock fee calculation
-      const storageFee = (fileSize / (1024 * 1024) * 0.01).toFixed(6);
-      const estimatedGas = '0.002';
-      const totalFee = (parseFloat(storageFee) + parseFloat(estimatedGas)).toFixed(6);
-      
-      setStatus(prev => ({
-        ...prev,
-        progress: 20,
+        statusMessage: 'Calculating storage fees...',
         fees: {
-          storageFee,
-          estimatedGas,
-          totalFee,
-        },
-        statusMessage: 'Generating file Merkle tree...'
+          storageFee: (file.size / 1024 / 1024 * 0.01).toFixed(4),
+          estimatedGas: '0.0025',
+          totalFee: ((file.size / 1024 / 1024 * 0.01) + 0.0025).toFixed(4)
+        }
       }));
 
-      // Simulate file preparation
+      // Give user time to see the fees
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Start the upload process
       setStatus(prev => ({ 
         ...prev, 
-        progress: 30,
-        statusMessage: 'Reading file data...'
+        progress: 20,
+        isUploading: true,
+        statusMessage: 'Preparing file for upload...'
       }));
-      
+
       // Read the file
       const fileBuffer = await file.arrayBuffer();
       
-      // Simulate merkle tree generation and submission
+      // Create a blob object from the file
       setStatus(prev => ({ 
         ...prev, 
-        progress: 50,
-        statusMessage: 'Uploading to 0G network...'
+        progress: 40,
+        statusMessage: 'Processing file data...'
       }));
 
-      // Simulate network delay
+      // In a real implementation, this would use the 0G SDK to create a blob
+      // We'll simulate a root hash
+      const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const rootHash = '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      setStatus(prev => ({ 
+        ...prev, 
+        progress: 60,
+        statusMessage: 'Sending transaction...'
+      }));
+
+      // Simulate transaction process
       await new Promise(resolve => setTimeout(resolve, 2000));
-      setStatus(prev => ({ 
-        ...prev, 
-        progress: 70,
-        statusMessage: 'Processing transaction...'
-      }));
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setStatus(prev => ({ 
-        ...prev, 
-        progress: 80,
-        statusMessage: 'Waiting for transaction confirmation...'
-      }));
+      // Create a mock transaction hash
+      const txHash = '0x' + Array(64).fill(0).map(() => 
+        Math.floor(Math.random() * 16).toString(16)).join('');
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       // Simulate successful upload
-      // Generate a mock root hash and transaction hash
-      const rootHash = `0x${Array.from(new Array(64)).map(() => 
-        Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      const txHash = `0x${Array.from(new Array(64)).map(() => 
-        Math.floor(Math.random() * 16).toString(16)).join('')}`;
-
-      // Success!
-      setStatus({
+      setStatus(prev => ({ 
+        ...prev, 
+        progress: 100,
         isUploading: false,
         isSuccess: true,
-        progress: 100,
-        rootHash: rootHash,
-        txHash: txHash,
-        fees: {
-          storageFee,
-          estimatedGas,
-          totalFee,
-        },
-        statusMessage: 'Upload complete!'
-      });
+        rootHash,
+        txHash,
+        statusMessage: 'Upload complete'
+      }));
 
       toast({
-        title: 'Upload Successful',
-        description: `File uploaded to 0G Storage successfully`,
+        title: 'Upload Success',
+        description: 'Your file has been uploaded to 0G Storage',
       });
 
+      return;
     } catch (error) {
-      console.error('Error uploading file to 0G:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error during upload';
-      
+      console.error('Upload error:', error);
       setStatus(prev => ({
         ...prev,
         isUploading: false,
-        isSuccess: false,
-        error: errorMessage,
-        statusMessage: 'Upload failed'
+        progress: 0,
+        error: error instanceof Error ? error.message : 'Unknown upload error occurred'
       }));
 
       toast({
         title: 'Upload Failed',
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Failed to upload file to 0G Storage',
         variant: 'destructive',
       });
     }

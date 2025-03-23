@@ -52,24 +52,26 @@ export async function initZKProver(): Promise<ZKProver> {
  * These should match the interface exposed by the Rust WASM module.
  */
 export interface KeystrokePattern {
-  timings: number[];
-  distributions: number[];
-  edit_patterns: string[];
-  velocity: number;
-  variance_score: number;
+  keystroke_deltas: number[];
+  total_time: number;
+  key_count: number;
 }
 
 export interface ZKProof {
-  proof_data: string;
-  public_values: {
-    content_hash: string;
-    authority_hash: string;
-    human_verified: boolean;
-    timestamp: number;
-  };
-  verification_data: {
-    word_count: number;
-    average_keystroke_time: number;
-    total_editing_time: number;
-  };
+  pattern_hash: string;
+  timestamp: number;
+  signature: string;
+}
+
+export interface PublicValues {
+  content_hash: string;
+  authority_hash: string;
+  human_verified: boolean;
+  timestamp: number;
+}
+
+export interface VerificationData {
+  word_count: number;
+  average_keystroke_time: number;
+  total_editing_time: number;
 } 

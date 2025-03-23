@@ -1,5 +1,5 @@
-import { KeystrokePattern, ZKProof } from '@/lib/zk-prover-init';
-import { ZKHumanTypingProof } from '@/components/zk-prover/ZKProverService';
+import init, { ZKProver } from '@/zk-prover/pkg/zk_prover';
+import type { KeystrokePattern, ZKProof } from '@/lib/zk-prover-init';
 
 /**
  * Types for image editing proof generation
@@ -119,6 +119,95 @@ export interface TextProofResponse {
   };
 }
 
+export class ZKBridgeService {
+  private static instance: ZKBridgeService;
+  private prover: ZKProver | null = null;
+  private isInitializing = false;
+  private initPromise: Promise<void> | null = null;
+
+  private constructor() {}
+
+  public static getInstance(): ZKBridgeService {
+    if (!ZKBridgeService.instance) {
+      ZKBridgeService.instance = new ZKBridgeService();
+    }
+    return ZKBridgeService.instance;
+  }
+
+  private async initProver(): Promise<void> {
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+
+    if (this.isInitializing) {
+      this.initPromise = new Promise((resolve, reject) => {
+        const checkInitialization = () => {
+          if (!this.isInitializing) {
+            if (this.prover) {
+              resolve();
+            } else {
+              reject(new Error('Failed to initialize ZK prover'));
+            }
+          } else {
+            setTimeout(checkInitialization, 100);
+          }
+        };
+        checkInitialization();
+      });
+      return this.initPromise;
+    }
+
+    this.isInitializing = true;
+    try {
+      await init();
+      this.prover = new ZKProver();
+    } catch (error) {
+      this.initPromise = null;
+      throw error;
+    } finally {
+      this.isInitializing = false;
+    }
+  }
+
+  public async collectKeystrokePatterns(deltas: number[]): Promise<KeystrokePattern> {
+    await this.initProver();
+    if (!this.prover) throw new Error('Failed to initialize ZK prover');
+
+    const pattern = await this.prover.collect_keystroke_patterns(deltas);
+    return {
+      keystroke_deltas: pattern.keystroke_deltas,
+      total_time: pattern.total_time,
+      key_count: pattern.key_count,
+    };
+  }
+
+  public async generateHumanTypingProof(
+    content: string,
+    pattern: KeystrokePattern
+  ): Promise<ZKProof> {
+    await this.initProver();
+    if (!this.prover) throw new Error('Failed to initialize ZK prover');
+
+    const proof = await this.prover.generate_human_typing_proof(content, pattern);
+    return {
+      pattern_hash: proof.pattern_hash,
+      timestamp: proof.timestamp,
+      signature: proof.signature,
+    };
+  }
+
+  public async verifyProofOnChain(proof: ZKProof): Promise<{ verified: boolean }> {
+    await this.initProver();
+    if (!this.prover) throw new Error('Failed to initialize ZK prover');
+
+    const result = await this.prover.verify_proof_on_chain(proof);
+    return { verified: result.verified };
+  }
+}
+
+// Export a singleton instance
+export const zkBridge = ZKBridgeService.getInstance();
+
 /**
  * Generate a ZK proof for image transformations using the ZKEditor API
  */
@@ -151,7 +240,7 @@ export async function generateImageProof(
  */
 export async function generateTextProof(
   request: TextProofRequest
-): Promise<ZKHumanTypingProof> {
+): Promise<ZKProof> {
   try {
     const response = await fetch('/api/zk-prover/generate-proof', {
       method: 'POST',
@@ -169,20 +258,7 @@ export async function generateTextProof(
     const result: ZKProof = await response.json();
     
     // Convert the Rust WASM proof format to the frontend format
-    return {
-      proof: result.proof_data,
-      publicValues: {
-        contentHash: result.public_values.content_hash,
-        authorityHash: result.public_values.authority_hash,
-        humanVerified: result.public_values.human_verified,
-        timestamp: result.public_values.timestamp,
-      },
-      verificationData: {
-        wordCount: result.verification_data.word_count,
-        averageKeystrokeTime: result.verification_data.average_keystroke_time,
-        totalEditingTime: result.verification_data.total_editing_time,
-      }
-    };
+    return result;
   } catch (error: any) {
     console.error('Error generating text proof:', error);
     throw error;
@@ -223,32 +299,16 @@ export async function verifyImageProofOnChain(
  * Verify a ZK proof for human typing on-chain
  */
 export async function verifyTextProofOnChain(
-  proof: ZKHumanTypingProof
+  proof: ZKProof
 ): Promise<{ verified: boolean; txHash: string }> {
   try {
-    // Convert the frontend proof format to the API format
-    const rustProofFormat: ZKProof = {
-      proof_data: proof.proof,
-      public_values: {
-        content_hash: proof.publicValues.contentHash,
-        authority_hash: proof.publicValues.authorityHash,
-        human_verified: proof.publicValues.humanVerified,
-        timestamp: proof.publicValues.timestamp,
-      },
-      verification_data: {
-        word_count: proof.verificationData.wordCount,
-        average_keystroke_time: proof.verificationData.averageKeystrokeTime,
-        total_editing_time: proof.verificationData.totalEditingTime,
-      }
-    };
-    
     const response = await fetch('/api/zk-prover/verify-on-chain', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        proof: rustProofFormat
+        proof: proof
       }),
     });
 
