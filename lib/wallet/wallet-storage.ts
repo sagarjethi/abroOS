@@ -26,6 +26,9 @@ interface WalletStorageResult<T> {
   error?: string;
 }
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 // Wallet storage service for securely storing wallet data
 export class WalletStorageService {
   private static instance: WalletStorageService;
@@ -34,8 +37,15 @@ export class WalletStorageService {
   
   private constructor() {}
   
-  // Singleton pattern
+  // Singleton pattern with safe server-side handling
   public static getInstance(): WalletStorageService {
+    // If we're on the server, return a mock/empty instance
+    if (!isBrowser) {
+      // Create a new instance every time to avoid sharing between requests
+      return new WalletStorageService();
+    }
+    
+    // Otherwise, use the standard singleton pattern
     if (!WalletStorageService.instance) {
       WalletStorageService.instance = new WalletStorageService();
     }
@@ -45,6 +55,12 @@ export class WalletStorageService {
   // Initialize IndexedDB
   public async init(): Promise<boolean> {
     if (this.isInitialized) return true;
+    
+    // If we're on the server, just mark as initialized and return
+    if (!isBrowser) {
+      this.isInitialized = true;
+      return false;
+    }
     
     return new Promise<boolean>((resolve) => {
       if (!window.indexedDB) {
@@ -83,6 +99,11 @@ export class WalletStorageService {
   
   // Store wallet data in IndexedDB or localStorage as fallback
   public async storeWallet(walletData: UserWalletData): Promise<WalletStorageResult<void>> {
+    // On server, return empty result
+    if (!isBrowser) {
+      return { success: false, error: 'Cannot store wallet on server' };
+    }
+    
     await this.init();
     
     try {
@@ -110,6 +131,11 @@ export class WalletStorageService {
   
   // Get wallet data by username
   public async getWallet(username: string): Promise<WalletStorageResult<UserWalletData>> {
+    // On server, return empty result
+    if (!isBrowser) {
+      return { success: false, error: 'Cannot retrieve wallet on server' };
+    }
+    
     await this.init();
     
     try {
@@ -128,6 +154,11 @@ export class WalletStorageService {
   
   // Check if a wallet exists for the given username
   public async hasWallet(username: string): Promise<boolean> {
+    // On server, always return false
+    if (!isBrowser) {
+      return false;
+    }
+    
     const result = await this.getWallet(username);
     return result.success && !!result.data;
   }
@@ -139,6 +170,11 @@ export class WalletStorageService {
   
   // Delete wallet data
   public async deleteWallet(username: string): Promise<WalletStorageResult<void>> {
+    // On server, return empty result
+    if (!isBrowser) {
+      return { success: false, error: 'Cannot delete wallet on server' };
+    }
+    
     await this.init();
     
     try {
@@ -157,6 +193,11 @@ export class WalletStorageService {
   
   // Get all wallets (for administration)
   public async getAllWallets(): Promise<WalletStorageResult<UserWalletData[]>> {
+    // On server, return empty result
+    if (!isBrowser) {
+      return { success: false, error: 'Cannot retrieve wallets on server' };
+    }
+    
     await this.init();
     
     try {
@@ -179,6 +220,11 @@ export class WalletStorageService {
     privateKey: string,
     password: string
   ): Promise<WalletStorageResult<void>> {
+    // On server, return empty result
+    if (!isBrowser) {
+      return { success: false, error: 'Cannot import wallet on server' };
+    }
+    
     try {
       const wallet = evmWalletService.getWalletFromPrivateKey(privateKey);
       const encryptedWallet = evmWalletService.encryptWallet(wallet, password);

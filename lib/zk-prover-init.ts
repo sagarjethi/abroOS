@@ -26,11 +26,26 @@ export async function initZKProver(): Promise<ZKProver> {
     try {
       console.log('Initializing ZK Prover WASM module...');
       
-      // Initialize the WASM module
-      await initWasm();
-      
-      // Create a new instance of the ZKProver
-      zkProverInstance = new ZKProver();
+      // Check if we're in browser or server environment
+      if (typeof window === 'undefined') {
+        // Server-side: Use a mock ZKProver for SSR
+        console.log('Server environment detected, using mock ZK Prover');
+        
+        // Create a mock ZKProver instance that implements the interface but does nothing
+        zkProverInstance = {
+          generate_proof: () => ({ pattern_hash: '', timestamp: 0, signature: '' }),
+          verify_proof: () => true,
+          verify_on_chain: () => true,
+          generate_keystroke_hash: () => '',
+        } as unknown as ZKProver;
+      } else {
+        // Client-side: Load the actual WASM module
+        // Initialize the WASM module
+        await initWasm();
+        
+        // Create a new instance of the ZKProver
+        zkProverInstance = new ZKProver();
+      }
       
       console.log('ZK Prover WASM module initialized successfully');
       

@@ -1,5 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "yarn build",
-  "framework": "nextjs"
+  "buildCommand": "yarn vercel-build",
+  "framework": "nextjs",
+  "installCommand": "yarn install",
+  "regions": ["sfo1"],
+  "public": true,
+  "functions": {
+    "api/**/*": {
+      "memory": 1024
+    }
+  }
 } 
