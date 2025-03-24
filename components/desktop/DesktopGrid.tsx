@@ -3,7 +3,7 @@
 import React, { useRef, useMemo, useCallback, useEffect } from "react";
 import { useGrid } from "@/hooks/useGrid";
 import { useSelection } from "@/hooks/useSelection";
-import { DesktopIcon } from "./DesktopIcon";
+import { DesktopIcon } from "@/components/desktop/DesktopIcon";
 import { SelectionBox } from "./SelectionBox";
 import { AnimatePresence } from "framer-motion";
 import type { AppIcon } from "@/types/global";
@@ -177,7 +177,7 @@ function DesktopGridInternal({
 
       {items.map((item) => {
         const icon = icons.find((i) => i.id === item.id);
-        if (!icon || !gridDimensions) return null;
+        if (!icon || !gridDimensions || !icon.icon) return null;
 
         return (
           <DesktopIcon

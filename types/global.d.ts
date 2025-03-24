@@ -10,6 +10,7 @@ export interface AppIcon {
   color: string;
   type: 'app' | 'file' | 'folder';
   isSystemApp?: boolean;
+  isDesktopApp?: boolean;
 }
 
 export type WindowContent = 
@@ -23,7 +24,9 @@ export type WindowContent =
   | { type: 'about'; content: React.ReactNode }
   | { type: 'browser'; }
   | { type: 'code-indexer'; }
-  | { type: 'default'; content: React.ReactNode };
+  | { type: 'ai-search'; initialQuery?: string; initialMode?: string; }
+  | { type: 'default'; content: React.ReactNode }
+  | { type: 'custom'; render: (props: { onClose: () => void }) => React.ReactNode };
 
 export interface Window {
   id: string;

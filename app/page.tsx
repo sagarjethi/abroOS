@@ -5,6 +5,7 @@ import Desktop from "@/components/Desktop";
 import Taskbar from "@/components/Taskbar";
 import { WindowsProvider } from "@/contexts/WindowsContext";
 import { FileSystemProvider } from "@/contexts/FileSystemContext";
+import { WalletProvider } from "@/contexts/WalletContext";
 import { AssistantGuide } from "@/components/AssistantGuide";
 import { LoginScreen } from "@/components/LoginScreen";
 import { LogoutDialog } from "@/components/LogoutDialog";
@@ -66,28 +67,30 @@ const Page: React.FC = () => {
   };
 
   return (
-    <FileSystemProvider>
-      <WindowsProvider>
-        {/* Show login screen if not logged in */}
-        {!isLoggedIn && <LoginScreen onLogin={handleLogin} />}
-        
-        {/* Desktop environment - only visible after login */}
-        <div className={`h-screen w-screen overflow-visible flex flex-col ${!isLoggedIn ? 'hidden' : ''}`}>
-          <div className="animated-gradient" aria-hidden="true" />
-          <Desktop currentUser={currentUser} />
-          <Taskbar onLogout={handleLogout} />
-          <AssistantGuide currentUser={currentUser} />
+    <WalletProvider>
+      <FileSystemProvider>
+        <WindowsProvider>
+          {/* Show login screen if not logged in */}
+          {!isLoggedIn && <LoginScreen onLogin={handleLogin} />}
           
-          {/* Logout confirmation dialog */}
-          <LogoutDialog 
-            isOpen={showLogoutDialog}
-            onClose={handleCancelLogout}
-            onConfirm={handleConfirmLogout}
-            username={currentUser}
-          />
-        </div>
-      </WindowsProvider>
-    </FileSystemProvider>
+          {/* Desktop environment - only visible after login */}
+          <div className={`h-screen w-screen overflow-visible flex flex-col ${!isLoggedIn ? 'hidden' : ''}`}>
+            <div className="animated-gradient" aria-hidden="true" />
+            <Desktop currentUser={currentUser} />
+            <Taskbar onLogout={handleLogout} />
+            <AssistantGuide currentUser={currentUser} />
+            
+            {/* Logout confirmation dialog */}
+            <LogoutDialog 
+              isOpen={showLogoutDialog}
+              onClose={handleCancelLogout}
+              onConfirm={handleConfirmLogout}
+              username={currentUser}
+            />
+          </div>
+        </WindowsProvider>
+      </FileSystemProvider>
+    </WalletProvider>
   );
 };
 

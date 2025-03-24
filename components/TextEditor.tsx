@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import { Save, FileSymlink } from "lucide-react";
 import { toast } from "sonner";
-import { fileSystem } from "@/lib/fileSystem";
+import { useFileSystem } from "@/contexts/FileSystemContext";
 
 interface TextEditorProps {
   fileId?: string;
@@ -21,8 +21,9 @@ export const TextEditor: React.FC<TextEditorProps> = ({
   path = [],
   fileName = "New File.txt"
 }) => {
+  const { getItemContent, updateItemContent } = useFileSystem();
   const [content, setContent] = useState(initialContent);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!!fileId);
   const [isDirty, setIsDirty] = useState(false);
   const [filePath, setFilePath] = useState<string[]>(path);
   const [currentFileName, setCurrentFileName] = useState(fileName);
@@ -37,31 +38,22 @@ export const TextEditor: React.FC<TextEditorProps> = ({
         return;
       }
       
-      // If fileId looks like a path (e.g. "file-documents-notes.txt")
-      if (fileId.startsWith("file-")) {
-        const pathSegments = fileId.slice(5).split("-");
-        if (pathSegments.length > 0) {
-          const name = pathSegments.pop() || "";
-          setCurrentFileName(name);
-          setFilePath(pathSegments);
-          
-          try {
-            const fileData = await fileSystem.readFile(pathSegments, name, true);
-            if (fileData) {
-              setContent(fileData.content as string);
-            }
-          } catch (error) {
-            console.error("Error loading file:", error);
-            toast.error("Failed to load file");
-          }
+      try {
+        const fileContent = await getItemContent(fileId);
+        if (fileContent) {
+          setContent(fileContent as string);
+          setIsDirty(false);
         }
+      } catch (error) {
+        console.error("Error loading file:", error);
+        toast.error("Failed to load file");
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     };
     
     loadFile();
-  }, [fileId]);
+  }, [fileId, getItemContent]);
   
   // Handle content change
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -71,16 +63,21 @@ export const TextEditor: React.FC<TextEditorProps> = ({
   
   // Save file
   const saveFile = async () => {
+    if (!fileId && !currentFileName) {
+      toast.error("Cannot save file without name");
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      const success = await fileSystem.writeFile(filePath, currentFileName, content);
-      
-      if (success) {
+      if (fileId) {
+        await updateItemContent(fileId, content);
         toast.success("File saved successfully");
         setIsDirty(false);
       } else {
-        toast.error("Failed to save file");
+        // Handle creating new file
+        toast.info("Creating new file is not implemented in this demo");
       }
     } catch (error) {
       console.error("Error saving file:", error);
@@ -96,7 +93,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({
         <div className="flex items-center space-x-2">
           <FileSymlink className="h-4 w-4" />
           <span className="text-sm font-medium">
-            {currentFileName}
+            {fileId ? currentFileName : "New File"}
             {isDirty && "*"}
           </span>
         </div>

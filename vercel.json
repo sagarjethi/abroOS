@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "buildCommand": "yarn vercel-build",
+  "framework": "nextjs",
+  "installCommand": "yarn install",
+  "regions": ["sfo1"],
+  "public": true
+} 

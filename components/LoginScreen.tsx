@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ClientTime } from './ClientTime';
-import { LogIn, User, ShieldCheck } from 'lucide-react';
+import { LogIn, User, ShieldCheck, Wallet } from 'lucide-react';
+import { useWallet } from '@/contexts/WalletContext';
 
 interface LoginScreenProps {
   onLogin: (username: string) => void;
@@ -12,6 +13,8 @@ interface LoginScreenProps {
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [currentDate, setCurrentDate] = useState('');
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [isWalletLoading, setIsWalletLoading] = useState(false);
+  const { loadWallet } = useWallet();
   
   // Update date on component mount and when date changes
   useEffect(() => {
@@ -35,8 +38,24 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     return () => clearInterval(interval);
   }, []);
   
-  const handleUserLogin = (username: string) => {
+  const handleUserLogin = async (username: string) => {
     setSelectedUser(username);
+    
+    // If user selects "Local User", attempt to load/create their wallet
+    if (username === "Local User") {
+      setIsWalletLoading(true);
+      
+      try {
+        // Load/create wallet using username as password for simplicity
+        await loadWallet(username, username);
+      } catch (error) {
+        console.error("Failed to load wallet:", error);
+      } finally {
+        setIsWalletLoading(false);
+      }
+    }
+    
+    // Continue with login after wallet operations
     setTimeout(() => {
       onLogin(username);
     }, 600);
@@ -145,7 +164,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             <UserOption
               name="Local User"
               icon={<User size={18} />}
+              secondaryIcon={<Wallet size={14} className="text-purple-300" />}
+              secondaryLabel="With Ethereum Wallet"
               isActive={selectedUser === "Local User"}
+              isLoading={isWalletLoading && selectedUser === "Local User"}
               onClick={() => handleUserLogin("Local User")}
             />
             
@@ -166,16 +188,22 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 interface UserOptionProps {
   name: string;
   icon: React.ReactNode;
+  secondaryIcon?: React.ReactNode;
+  secondaryLabel?: string;
   highlight?: string;
   isActive?: boolean;
+  isLoading?: boolean;
   onClick: () => void;
 }
 
 function UserOption({ 
   name, 
   icon,
+  secondaryIcon,
+  secondaryLabel,
   highlight = "bg-gray-900/50 border-gray-800",
   isActive = false,
+  isLoading = false,
   onClick 
 }: UserOptionProps) {
   return (
@@ -195,7 +223,15 @@ function UserOption({
         </div>
       </div>
       
-      <div className="text-white">{name}</div>
+      <div className="flex-1">
+        <div className="text-white">{name}</div>
+        {secondaryLabel && (
+          <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+            {secondaryIcon}
+            <span>{secondaryLabel}</span>
+          </div>
+        )}
+      </div>
       
       {isActive && (
         <motion.div
@@ -203,7 +239,11 @@ function UserOption({
           animate={{ scale: 1, opacity: 1 }}
           className="ml-auto"
         >
-          <LogIn size={16} className="text-white/80" />
+          {isLoading ? (
+            <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-white/80 animate-spin" />
+          ) : (
+            <LogIn size={16} className="text-white/80" />
+          )}
         </motion.div>
       )}
     </motion.div>

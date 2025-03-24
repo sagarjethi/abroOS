@@ -19,9 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": ["./*"],
+      "@/zk-prover/pkg/*": ["./zk-prover/pkg/*"]
+    },
+    "types": ["node", "webpack-env"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "zk-prover/pkg/**/*.d.ts"],
   "exclude": ["node_modules"]
 }

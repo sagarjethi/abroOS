@@ -16,11 +16,26 @@ import {
   HardDrive,
   Folder,
   Globe,
-  Code
+  Code,
+  Wallet as WalletIcon,
+  FileText,
+  Gamepad2,
+  CloudSun,
+  Settings,
+  FolderIcon,
+  Trash,
+  CreditCard,
+  Search,
+  Sparkles,
+  Cpu,
+  PenLine,
+  Database,
+  type LucideIcon
 } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { DesktopGrid } from "./desktop/DesktopGrid";
+import { DesktopIcon } from "./desktop/DesktopIcon";
 import { FileExplorer } from "./FileExplorer";
 import { AboutMeContent } from "./AboutMeContent";
 import { TextEditor } from "./TextEditor";
@@ -33,24 +48,38 @@ import { MemoryGame } from "./MemoryGame";
 import { WeatherApp } from "./WeatherApp";
 import { Calendar } from "./Calender";
 import { FileSystemExplorer } from "./FileSystemExplorer";
+import { WalletApp } from "./wallet/WalletApp";
+import { ZeroGFileApp } from "./wallet/ZeroGFileApp";
+import { SecureAccountApp } from "./wallet/SecureAccountApp";
 import ContextMenu from './ContextMenu';
 import styles from '../styles/Desktop.module.css';
 import { fileSystem } from '@/lib/fileSystem';
+import { AISearchWidget } from "./ai-search/AISearchWidget";
+import { AISearchAgent, AI_MODES } from "./ai-search/AISearchAgent";
+import { ZeroGComputeWindow } from "./desktop/ZeroGComputeWindow";
+import { ZKHumanTypingEditor } from "./ZKHumanTypingEditor";
+import { SecretVaultShortcut } from "./nillion/SecretVaultShortcut";
+import { SecretVaultApp } from "./nillion/SecretVaultApp";
 
 // First, let's define our default icons outside the component to keep it clean
 const DEFAULT_ICONS: AppIcon[] = [
   { id: "myPC", title: "My PC", icon: Monitor, x: 0, y: 0, color: "text-indigo-400", type: "app", isSystemApp: true },
-  { id: "weather", title: "Weather", icon: Cloud, x: 1, y: 0, color: "text-sky-400", type: "app" },
-  { id: "terminal", title: "Terminal", icon: Terminal, x: 0, y: 1, color: "text-green-400", type: "app" },
-  { id: "aboutMe", title: "About Me", icon: Info, x: 1, y: 1, color: "text-cyan-400", type: "file" },
+  { id: "fileSystem", title: "Files", icon: HardDrive, x: 0, y: 1, color: "text-emerald-400", type: "app" },
+  { id: "textEditor", title: "Text Editor", icon: FileEdit, x: 1, y: 1, color: "text-orange-400", type: "app" },
   { id: "calculator", title: "Calculator", icon: Calculator, x: 0, y: 2, color: "text-yellow-400", type: "app" },
-  { id: "textEditor", title: "Text Editor", icon: FileEdit, x: 1, y: 2, color: "text-orange-400", type: "app" },
-  { id: "memory", title: "Memory Game", icon: Layout, x: 0, y: 3, color: "text-purple-400", type: "app" },
-  { id: "readme", title: "README", icon: FileQuestion, x: 1, y: 3, color: "text-blue-400", type: "app" },
-  { id: "calendar", title: "Calendar", icon: CalendarIcon, x: 0, y: 4, color: "text-rose-400", type: "app" },
-  { id: "fileSystem", title: "Files", icon: HardDrive, x: 1, y: 4, color: "text-emerald-400", type: "app" },
-  { id: "browser", title: "Browser", icon: Globe, x: 0, y: 5, color: "text-blue-500", type: "app" },
-  { id: "codeIndexer", title: "Code Indexer", icon: Code, x: 1, y: 5, color: "text-violet-400", type: "app" },
+  { id: "browser", title: "Browser", icon: Globe, x: 1, y: 2, color: "text-blue-500", type: "app" },
+  { id: "calendar", title: "Calendar", icon: CalendarIcon, x: 0, y: 3, color: "text-rose-400", type: "app" },
+  { id: "weather", title: "Weather", icon: CloudSun, x: 1, y: 3, color: "text-sky-400", type: "app" },
+  { id: "memory", title: "Memory Game", icon: Gamepad2, x: 0, y: 4, color: "text-purple-400", type: "app" },
+  { id: "aboutMe", title: "About Me", icon: Info, x: 1, y: 4, color: "text-cyan-400", type: "file" },
+  { id: "readme", title: "README", icon: FileQuestion, x: 0, y: 5, color: "text-blue-400", type: "app" },
+  { id: "aiSearch", title: "AI Search", icon: Sparkles, x: 1, y: 5, color: "text-amber-500", type: "app" },
+  { id: "wallet", title: "Ethereum Wallet", icon: WalletIcon, x: 0, y: 6, color: "text-purple-500", type: "app" },
+  { id: "0gfiles", title: "0G Storage", icon: HardDrive, x: 1, y: 6, color: "text-blue-400", type: "app" },
+  { id: "zkTypingProof", title: "ZK Human Blog", icon: PenLine, x: 1, y: 7, color: "text-purple-400", type: "app" },
+  { id: "0gCompute", title: "0G Compute", icon: Cpu, x: 0, y: 7, color: "text-teal-500", type: "app", isDesktopApp: true },
+  { id: "secretVault", title: "Nillion SecretVault", icon: Database, x: 1, y: 8, color: "text-indigo-500", type: "app", isDesktopApp: true },
+  { id: "secureAccount", title: "Secure Accounts", icon: CreditCard, x: 0, y: 8, color: "text-green-500", type: "app" },
 ];
 
 const LOCAL_STORAGE_KEY = 'desktop-icons-v2';
@@ -60,7 +89,7 @@ interface DesktopProps {
 }
 
 export default function Desktop({ currentUser = 'User' }: DesktopProps) {
-  const { windows, openWindow, isWindowOpen, focusWindow } = useWindows();
+  const { windows, openWindow, isWindowOpen, focusWindow, closeWindow } = useWindows();
   
   const { 
     files, 
@@ -106,10 +135,17 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
                   x: savedIcon.x,
                   y: savedIcon.y,
                   title: savedIcon.title || defaultIcon.title,
-                  color: savedIcon.color || defaultIcon.color
+                  color: savedIcon.color || defaultIcon.color,
+                  icon: defaultIcon.icon // Ensure we use the icon from default icons
                 };
               }
-              return savedIcon;
+              // For custom icons, ensure they have a valid icon component
+              return {
+                ...savedIcon,
+                icon: savedIcon.type === 'file' ? FileText :
+                      savedIcon.type === 'folder' ? Folder :
+                      FileQuestion // Default icon
+              };
             });
             
             console.log('Loaded icons from localStorage:', mergedIcons);
@@ -176,14 +212,27 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
     };
   }, []);
 
+  const [showSearchWidget, setShowSearchWidget] = useState(true);
+
   const handleIconOpen = useCallback((icon: AppIcon) => {
     if (isWindowOpen(icon.id)) {
       focusWindow(icon.id);
       return;
     }
 
+    // If this is a desktop app, skip window creation and find the shortcut to click
+    if (icon.isDesktopApp) {
+      // Find and programmatically click the corresponding desktop app shortcut
+      const shortcutElement = document.querySelector(`[data-shortcut="${icon.id}"]`);
+      if (shortcutElement) {
+        (shortcutElement as HTMLElement).click();
+      }
+      return;
+    }
+
     let width = 600;
     let height = 400;
+    let content: WindowContent = { type: 'default', content: <div>Loading...</div> }; // Default initialization
 
     switch (icon.id) {
       case 'textEditor':
@@ -222,18 +271,37 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
         width = 1000;
         height = 700;
         break;
+      case 'wallet':
+        width = 500;
+        height = 650;
+        break;
+      case '0gfiles':
+        width = 800;
+        height = 600;
+        break;
+      case 'aiSearch':
+        width = 800;
+        height = 600;
+        break;
+      case '0gCompute':
+        width = 900;
+        height = 600;
+        break;
+      case 'zkTypingProof':
+        width = 900;
+        height = 600;
+        break;
+      case 'secureAccount':
+        width = 900;
+        height = 700;
+        break;
     }
-
-    const position = getRandomWindowPosition(width, height);
-
-    let content: WindowContent;
 
     switch (icon.id) {
       case 'myPC':
         content = {
           type: 'file-explorer',
           icons: icons.filter(i => i.id !== 'myPC'),
-          aboutMeContent: <AboutMeContent />
         };
         break;
       case 'aboutMe':
@@ -282,47 +350,55 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
           type: 'code-indexer'
         };
         break;
-      case 'textEditor':
+      case 'wallet':
         content = {
           type: 'default',
-          content: <TextEditor initialContent="" />
+          content: <WalletApp onClose={() => closeWindow('wallet')} />
         };
         break;
-      case icon.type === 'file' && icon.id:
-        if (icon.id.startsWith('file-')) {
-          const pathSegments = icon.id.slice(5).split('-');
-          const fileName = pathSegments.pop() || '';
-          const path = pathSegments;
-          
-          content = {
-            type: 'default',
-            content: <TextEditor fileId={icon.id} path={path} fileName={fileName} />
-          };
-        } else {
-          content = {
-            type: 'default',
-            content: <TextEditor fileId={icon.id} />
-          };
-        }
-        break;
-      case 'terminal':
+      case '0gfiles':
         content = {
           type: 'default',
-          content: (
-            <div className="font-mono p-4 bg-black text-green-400">
-              <p>Terminal not implemented yet.</p>
-              <p className="animate-pulse">▋</p>
-            </div>
+          content: <ZeroGFileApp username={currentUser} />
+        };
+        break;
+      case 'textEditor':
+        content = {
+          type: 'text-editor',
+          id: 'new-document'
+        };
+        break;
+      case 'aiSearch':
+        content = {
+          type: 'ai-search',
+          initialQuery: '',
+          initialMode: AI_MODES.ASSISTANT,
+        };
+        break;
+      case 'zkTypingProof':
+        content = {
+          type: 'default',
+          content: <ZKHumanTypingEditor />
+        };
+        break;
+      case 'secureAccount':
+        content = {
+          type: 'default',
+          content: <SecureAccountApp />
+        };
+        break;
+      case '0gCompute':
+        content = {
+          type: 'custom',
+          render: ({ onClose }: { onClose: () => void }) => (
+            <ZeroGComputeWindow isOpen={true} onClose={() => closeWindow('0gCompute')} />
           )
         };
         break;
       case 'fileSystem':
         content = {
-          type: 'default' as const,
-          content: <FileSystemExplorer />
+          type: 'file-explorer'
         };
-        width = 800;
-        height = 600;
         break;
       default:
         if (icon.type === 'file') {
@@ -332,16 +408,18 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
           };
         } else if (icon.type === 'folder') {
           content = {
-            type: 'default',
-            content: <FileExplorer folderId={icon.id} title={icon.title} />
+            type: 'file-explorer',
+            folderId: icon.id
           };
         } else {
           content = {
             type: 'default',
-            content: `Content for ${icon.title}`
+            content: <div className="p-4">Content for {icon.title}</div>
           };
         }
     }
+
+    const position = getRandomWindowPosition(width, height);
 
     openWindow({
       id: icon.id,
@@ -351,7 +429,7 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
       width,
       height,
     });
-  }, [openWindow, isWindowOpen, focusWindow, icons, getRandomWindowPosition]);
+  }, [openWindow, isWindowOpen, focusWindow, icons, getRandomWindowPosition, closeWindow, currentUser]);
 
   const findNextAvailablePosition = useCallback(() => {
     const maxY = Math.max(...icons.map(icon => icon.y || 0), 0) + 1;
@@ -531,20 +609,22 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
     setSelectedIcons(new Set(selectedIds));
   }, []);
 
-  const desktopContextMenu = useCallback((e: React.MouseEvent) => {
+  const desktopContextMenu = (e: React.MouseEvent) => {
+    // Prevent default browser context menu
     e.preventDefault();
     
-    const element = e.target as HTMLElement;
-    const iconElement = element.closest('[data-icon-id]');
-    const targetId = iconElement ? iconElement.getAttribute('data-icon-id') || undefined : undefined;
+    // Close existing context menu if open
+    closeContextMenu();
     
-    setContextMenu({
-      visible: true,
-      x: e.clientX,
-      y: e.clientY,
-      targetId
-    });
-  }, []);
+    // Only show desktop context menu if not right-clicking on an icon
+    if (!(e.target as HTMLElement).closest('.desktop-icon')) {
+      setContextMenu({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY
+      });
+    }
+  };
 
   const handleSort = useCallback((sortType: string) => {
     const userIcons = icons.filter(icon => icon.type !== 'app');
@@ -602,6 +682,90 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
     return icon.type;
   }, [icons]);
 
+  // Handle AI search from the widget
+  const handleSearch = (query: string, mode: string) => {
+    // If AI search window is already open, focus it and update search
+    if (isWindowOpen('aiSearch')) {
+      focusWindow('aiSearch');
+      // Here you would update the search query in the window
+      // This would require additional state management
+      return;
+    }
+
+    // Otherwise open a new AI search window with the query
+    const width = 800;
+    const height = 600;
+    const position = getRandomWindowPosition(width, height);
+
+    openWindow({
+      id: 'aiSearch',
+      title: 'AI Search',
+      width,
+      height,
+      x: position.x,
+      y: position.y,
+      content: {
+        type: 'ai-search',
+        initialQuery: query,
+        initialMode: mode,
+      },
+    });
+  };
+
+  // Open the full AI search window
+  const openFullSearch = () => {
+    if (isWindowOpen('aiSearch')) {
+      focusWindow('aiSearch');
+    } else {
+      // Find the AI search icon
+      const aiSearchIcon = icons.find(icon => icon.id === 'aiSearch');
+      if (aiSearchIcon) {
+        const width = 800;
+        const height = 600;
+        const position = getRandomWindowPosition(width, height);
+        
+        openWindow({
+          id: 'aiSearch',
+          title: 'AI Search',
+          width,
+          height,
+          x: position.x,
+          y: position.y,
+          content: {
+            type: 'ai-search',
+            initialQuery: '',
+            initialMode: AI_MODES.ASSISTANT,
+          },
+        });
+      }
+    }
+  };
+
+  const getWindowContent = (windowId: string): WindowContent => {
+    // Handle window content based on id
+    switch (windowId) {
+      case '0gCompute':
+        return {
+          type: 'custom',
+          render: ({ onClose }) => (
+            <ZeroGComputeWindow isOpen={true} onClose={onClose} />
+          )
+        };
+
+      case 'secretVault':
+        return {
+          type: 'custom',
+          render: ({ onClose }) => (
+            <SecretVaultApp isOpen={true} onClose={onClose} />
+          )
+        };
+
+      default:
+        // Handle other window types
+        return { type: 'default', content: <div>Unknown window content</div> };
+    }
+  };
+
   return (
     <div
       ref={desktopRef}
@@ -611,6 +775,16 @@ export default function Desktop({ currentUser = 'User' }: DesktopProps) {
       )}
       onContextMenu={desktopContextMenu}
     >
+      {/* AI Search Widget */}
+      {showSearchWidget && (
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-10">
+          <AISearchWidget 
+            onSearch={handleSearch}
+            onOpenFullSearch={openFullSearch}
+          />
+        </div>
+      )}
+
       <DesktopGrid
         icons={icons}
         onIconsChange={handleIconsChange}

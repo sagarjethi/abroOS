@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { type LucideIcon } from "lucide-react";
 
 interface ClickInfo {
   x: number;
@@ -14,7 +15,7 @@ interface ClickInfo {
 interface DesktopIconProps {
   id: string;
   title: string;
-  icon: any;
+  icon: LucideIcon;
   x: number;
   y: number;
   width: number;
@@ -128,7 +129,7 @@ export function DesktopIcon({
     <motion.div
       ref={iconRef}
       className={cn(
-        "absolute flex flex-col items-center justify-center p-2",
+        "absolute flex flex-col items-center justify-center p-2 desktop-icon",
         "highlight-hover",
         isDragging && "opacity-50",
         isSelected && "bg-primary/20 rounded-lg",
@@ -155,7 +156,7 @@ export function DesktopIcon({
       onMouseLeave={() => setIsHovered(false)}
       onContextMenu={handleContextMenu}
     >
-      <Icon className={cn("h-8 w-8 pointer-events-none transition-transform", color)} />
+      {Icon && <Icon className={cn("h-8 w-8 pointer-events-none transition-transform", color)} />}
       {isEditing ? (
         <Input
           ref={inputRef}
